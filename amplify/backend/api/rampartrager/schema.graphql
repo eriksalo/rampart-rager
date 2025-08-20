@@ -1,0 +1,21 @@
+type RaceResult @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  bib: Int!
+  firstName: String!
+  lastName: String!
+  elapsedTime: String!
+  race: String! # 100K, 70K, 50K
+  category: String! # Open, Masters, Veteran
+  gender: String! # MALE, FEMALE
+  place: Int!
+  finishTime: String
+  startTime: String
+  age: Int
+}
+
+type RaceMeta @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  raceName: String!
+  raceDate: String!
+  lastUpdated: String!
+}

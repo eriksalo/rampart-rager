@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "api": {
+      "rampartrager": [
+        "Query",
+        "Mutation",
+        "Subscription"
+      ]
+    }
+  },
+  "lambdaLayers": []
+}

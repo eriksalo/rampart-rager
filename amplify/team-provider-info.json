@@ -1,0 +1,32 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-rampartrager-dev-80b14-authRole",
+      "UnauthRoleArn": "arn:aws:iam::427077559838:role/amplify-rampartrager-dev-80b14-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::427077559838:role/amplify-rampartrager-dev-80b14-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-rampartrager-dev-80b14-deployment",
+      "UnauthRoleName": "amplify-rampartrager-dev-80b14-unauthRole",
+      "StackName": "amplify-rampartrager-dev-80b14",
+      "StackId": "arn:aws:cloudformation:us-east-1:427077559838:stack/amplify-rampartrager-dev-80b14/bf35f510-7d77-11f0-92ce-122753585a8b",
+      "AmplifyAppId": "d25v76jvn20i5c"
+    },
+    "categories": {
+      "auth": {
+        "rampartrager7040318a": {}
+      },
+      "function": {
+        "processRaceResults": {
+          "deploymentBucketName": "amplify-rampartrager-dev-80b14-deployment",
+          "s3Key": "amplify-builds/processRaceResults-63456942595147734e72-build.zip"
+        }
+      },
+      "api": {
+        "rampartrager": {}
+      },
+      "storage": {
+        "racedata": {}
+      }
+    }
+  }
+}

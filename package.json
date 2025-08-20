@@ -9,5 +9,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "@aws-amplify/ui-react": "^6.11.2",
+    "aws-amplify": "^6.15.5"
+  }
 }
