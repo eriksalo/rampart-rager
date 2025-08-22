@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(amplify status:*)",
+      "Bash(amplify push:*)",
+      "Bash(set AMPLIFY_CLI_HEADLESS=1)",
+      "Bash(timeout:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npm start)",
+      "Bash(npm run build:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

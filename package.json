@@ -1,17 +1,42 @@
 {
   "name": "rampart-rager",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Rampart Rager Ultra Marathon Race Results Website",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
-  "keywords": [],
+  "keywords": [
+    "race",
+    "marathon",
+    "results"
+  ],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
     "@aws-amplify/ui-react": "^6.11.2",
-    "aws-amplify": "^6.15.5"
+    "aws-amplify": "^6.15.5",
+    "lucide-react": "^0.394.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "react-scripts": "5.0.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

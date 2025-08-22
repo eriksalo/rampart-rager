@@ -1,12 +1,21 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const getTodo = /* GraphQL */ `
-  query GetTodo($id: ID!) {
-    getTodo(id: $id) {
+export const getRaceResult = /* GraphQL */ `
+  query GetRaceResult($id: ID!) {
+    getRaceResult(id: $id) {
       id
-      name
-      description
+      bib
+      firstName
+      lastName
+      elapsedTime
+      race
+      category
+      gender
+      place
+      finishTime
+      startTime
+      age
       createdAt
       updatedAt
       _version
@@ -16,17 +25,26 @@ export const getTodo = /* GraphQL */ `
     }
   }
 `;
-export const listTodos = /* GraphQL */ `
-  query ListTodos(
-    $filter: ModelTodoFilterInput
+export const listRaceResults = /* GraphQL */ `
+  query ListRaceResults(
+    $filter: ModelRaceResultFilterInput
     $limit: Int
     $nextToken: String
   ) {
-    listTodos(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    listRaceResults(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
-        name
-        description
+        bib
+        firstName
+        lastName
+        elapsedTime
+        race
+        category
+        gender
+        place
+        finishTime
+        startTime
+        age
         createdAt
         updatedAt
         _version
@@ -40,14 +58,14 @@ export const listTodos = /* GraphQL */ `
     }
   }
 `;
-export const syncTodos = /* GraphQL */ `
-  query SyncTodos(
-    $filter: ModelTodoFilterInput
+export const syncRaceResults = /* GraphQL */ `
+  query SyncRaceResults(
+    $filter: ModelRaceResultFilterInput
     $limit: Int
     $nextToken: String
     $lastSync: AWSTimestamp
   ) {
-    syncTodos(
+    syncRaceResults(
       filter: $filter
       limit: $limit
       nextToken: $nextToken
@@ -55,8 +73,89 @@ export const syncTodos = /* GraphQL */ `
     ) {
       items {
         id
-        name
-        description
+        bib
+        firstName
+        lastName
+        elapsedTime
+        race
+        category
+        gender
+        place
+        finishTime
+        startTime
+        age
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const getRaceMeta = /* GraphQL */ `
+  query GetRaceMeta($id: ID!) {
+    getRaceMeta(id: $id) {
+      id
+      raceName
+      raceDate
+      lastUpdated
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const listRaceMetas = /* GraphQL */ `
+  query ListRaceMetas(
+    $filter: ModelRaceMetaFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listRaceMetas(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        raceName
+        raceDate
+        lastUpdated
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const syncRaceMetas = /* GraphQL */ `
+  query SyncRaceMetas(
+    $filter: ModelRaceMetaFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncRaceMetas(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        raceName
+        raceDate
+        lastUpdated
         createdAt
         updatedAt
         _version

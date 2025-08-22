@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Clock, Medal, Users, Edit3, Save, X, Plus, Upload } from 'lucide-react';
 
-// Uncomment these imports when you set up AWS Amplify
-// import { API } from 'aws-amplify';
-// import { uploadData } from 'aws-amplify/storage';
+import { generateClient } from 'aws-amplify/api';
+import { uploadData } from 'aws-amplify/storage';
+import { listRaceResults, getRaceResult } from './graphql/queries';
+import { createRaceResult, updateRaceResult, deleteRaceResult } from './graphql/mutations';
+
+const client = generateClient();
 
 const RampartRagerWebsite = () => {
   const [activeRace, setActiveRace] = useState('100K');
@@ -47,23 +50,32 @@ const RampartRagerWebsite = () => {
   const categories = ['Open', 'Masters', 'Veteran'];
   const races = ['100K', '70K', '50K'];
 
-  // Load race data from AWS API (uncomment when AWS is set up)
+  // Load race data from AWS API
   useEffect(() => {
-    // loadRaceData();
+    loadRaceData();
   }, []);
 
-  // AWS API integration functions (uncomment when AWS is set up)
-  /*
+  // AWS API integration functions
   const loadRaceData = async () => {
     try {
       setLoading(true);
       const newRaceData = {};
       
       for (const race of races) {
-        const response = await API.get('raceAPI', '/results', {
-          queryStringParameters: { race }
-        });
-        newRaceData[race] = response.results || [];
+        try {
+          const response = await client.graphql({
+            query: listRaceResults,
+            variables: { filter: { race: { eq: race } } }
+          });
+          
+          const results = response.data.listRaceResults.items || [];
+          // Sort by place
+          results.sort((a, b) => a.place - b.place);
+          newRaceData[race] = results;
+        } catch (raceError) {
+          console.log(`No results found for ${race}, using empty array`);
+          newRaceData[race] = [];
+        }
       }
       
       setRaceData(newRaceData);
@@ -77,8 +89,19 @@ const RampartRagerWebsite = () => {
 
   const updateRunnerInDB = async (runner) => {
     try {
-      await API.put('raceAPI', `/results/${runner.id}`, {
-        body: runner
+      await client.graphql({
+        query: updateRaceResult,
+        variables: {
+          input: {
+            id: runner.id,
+            firstName: runner.firstName,
+            lastName: runner.lastName,
+            elapsedTime: runner.elapsedTime,
+            category: runner.category,
+            gender: runner.gender,
+            place: runner.place
+          }
+        }
       });
       
       // Reload data
@@ -95,7 +118,7 @@ const RampartRagerWebsite = () => {
       setUploading(true);
       
       // Upload to S3 - this will trigger the Lambda function
-      await uploadData({
+      const result = await uploadData({
         key: `race-results/${Date.now()}-${file.name}`,
         data: file,
         options: {
@@ -103,12 +126,14 @@ const RampartRagerWebsite = () => {
         }
       });
       
+      await result.result;
+      
       alert('File uploaded successfully! Results will be updated shortly.');
       
       // Reload data after a short delay to allow processing
       setTimeout(() => {
         loadRaceData();
-      }, 3000);
+      }, 5000);
       
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -117,7 +142,6 @@ const RampartRagerWebsite = () => {
       setUploading(false);
     }
   };
-  */
 
   const formatTime = (timeString) => {
     if (!timeString) return 'DNF';
@@ -161,56 +185,69 @@ const RampartRagerWebsite = () => {
     setEditingRunner({ ...runner });
   };
 
-  const handleSaveEdit = () => {
-    // For AWS integration, uncomment this line:
-    // await updateRunnerInDB(editingRunner);
-    
-    // For now, update local state (replace with AWS integration)
-    setRaceData(prev => ({
-      ...prev,
-      [activeRace]: prev[activeRace].map(runner => 
-        runner.bib === editingRunner.bib ? editingRunner : runner
-      )
-    }));
-    setEditingRunner(null);
-    
-    // Show success message
-    alert('Runner updated! (In production, this will save to AWS database)');
+  const handleSaveEdit = async () => {
+    try {
+      // Update in AWS database
+      await updateRunnerInDB(editingRunner);
+      setEditingRunner(null);
+    } catch (error) {
+      console.error('Error saving runner:', error);
+      // Fallback to local state update
+      setRaceData(prev => ({
+        ...prev,
+        [activeRace]: prev[activeRace].map(runner => 
+          runner.bib === editingRunner.bib ? editingRunner : runner
+        )
+      }));
+      setEditingRunner(null);
+      alert('Runner updated locally. Database update failed.');
+    }
   };
 
-  const handleAddRunner = () => {
-    const nextPlace = Math.max(...raceData[activeRace].map(r => r.place), 0) + 1;
-    const runner = {
-      ...newRunner,
-      bib: parseInt(newRunner.bib),
-      place: nextPlace
-    };
-    
-    setRaceData(prev => ({
-      ...prev,
-      [activeRace]: [...prev[activeRace], runner].sort((a, b) => a.place - b.place)
-    }));
-    
-    setNewRunner({
-      bib: '',
-      firstName: '',
-      lastName: '',
-      elapsedTime: '',
-      category: 'Open',
-      gender: 'MALE'
-    });
-    setShowAddRunner(false);
+  const handleAddRunner = async () => {
+    try {
+      const nextPlace = Math.max(...raceData[activeRace].map(r => r.place), 0) + 1;
+      const runner = {
+        ...newRunner,
+        bib: parseInt(newRunner.bib),
+        place: nextPlace,
+        race: activeRace
+      };
+      
+      // Create in AWS database
+      await client.graphql({
+        query: createRaceResult,
+        variables: {
+          input: runner
+        }
+      });
+      
+      // Reload data
+      await loadRaceData();
+      
+      setNewRunner({
+        bib: '',
+        firstName: '',
+        lastName: '',
+        elapsedTime: '',
+        category: 'Open',
+        gender: 'MALE'
+      });
+      setShowAddRunner(false);
+      
+      alert('Runner added successfully!');
+    } catch (error) {
+      console.error('Error adding runner:', error);
+      alert('Error adding runner. Please try again.');
+    }
   };
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    // For AWS integration, uncomment this line and comment out the alert below:
-    // await handleAWSFileUpload(file);
-    
-    // Temporary alert for demo - replace with AWS integration
-    alert(`File "${file.name}" ready for upload! When you set up AWS, this will automatically process your Excel file and update all race results.`);
+    // Upload to AWS S3 and process
+    await handleAWSFileUpload(file);
   };
 
   return (

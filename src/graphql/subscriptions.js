@@ -1,12 +1,23 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const onCreateTodo = /* GraphQL */ `
-  subscription OnCreateTodo($filter: ModelSubscriptionTodoFilterInput) {
-    onCreateTodo(filter: $filter) {
+export const onCreateRaceResult = /* GraphQL */ `
+  subscription OnCreateRaceResult(
+    $filter: ModelSubscriptionRaceResultFilterInput
+  ) {
+    onCreateRaceResult(filter: $filter) {
       id
-      name
-      description
+      bib
+      firstName
+      lastName
+      elapsedTime
+      race
+      category
+      gender
+      place
+      finishTime
+      startTime
+      age
       createdAt
       updatedAt
       _version
@@ -16,12 +27,23 @@ export const onCreateTodo = /* GraphQL */ `
     }
   }
 `;
-export const onUpdateTodo = /* GraphQL */ `
-  subscription OnUpdateTodo($filter: ModelSubscriptionTodoFilterInput) {
-    onUpdateTodo(filter: $filter) {
+export const onUpdateRaceResult = /* GraphQL */ `
+  subscription OnUpdateRaceResult(
+    $filter: ModelSubscriptionRaceResultFilterInput
+  ) {
+    onUpdateRaceResult(filter: $filter) {
       id
-      name
-      description
+      bib
+      firstName
+      lastName
+      elapsedTime
+      race
+      category
+      gender
+      place
+      finishTime
+      startTime
+      age
       createdAt
       updatedAt
       _version
@@ -31,12 +53,71 @@ export const onUpdateTodo = /* GraphQL */ `
     }
   }
 `;
-export const onDeleteTodo = /* GraphQL */ `
-  subscription OnDeleteTodo($filter: ModelSubscriptionTodoFilterInput) {
-    onDeleteTodo(filter: $filter) {
+export const onDeleteRaceResult = /* GraphQL */ `
+  subscription OnDeleteRaceResult(
+    $filter: ModelSubscriptionRaceResultFilterInput
+  ) {
+    onDeleteRaceResult(filter: $filter) {
       id
-      name
-      description
+      bib
+      firstName
+      lastName
+      elapsedTime
+      race
+      category
+      gender
+      place
+      finishTime
+      startTime
+      age
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const onCreateRaceMeta = /* GraphQL */ `
+  subscription OnCreateRaceMeta($filter: ModelSubscriptionRaceMetaFilterInput) {
+    onCreateRaceMeta(filter: $filter) {
+      id
+      raceName
+      raceDate
+      lastUpdated
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateRaceMeta = /* GraphQL */ `
+  subscription OnUpdateRaceMeta($filter: ModelSubscriptionRaceMetaFilterInput) {
+    onUpdateRaceMeta(filter: $filter) {
+      id
+      raceName
+      raceDate
+      lastUpdated
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteRaceMeta = /* GraphQL */ `
+  subscription OnDeleteRaceMeta($filter: ModelSubscriptionRaceMetaFilterInput) {
+    onDeleteRaceMeta(filter: $filter) {
+      id
+      raceName
+      raceDate
+      lastUpdated
       createdAt
       updatedAt
       _version

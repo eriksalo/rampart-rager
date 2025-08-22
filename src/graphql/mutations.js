@@ -1,15 +1,24 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const createTodo = /* GraphQL */ `
-  mutation CreateTodo(
-    $input: CreateTodoInput!
-    $condition: ModelTodoConditionInput
+export const createRaceResult = /* GraphQL */ `
+  mutation CreateRaceResult(
+    $input: CreateRaceResultInput!
+    $condition: ModelRaceResultConditionInput
   ) {
-    createTodo(input: $input, condition: $condition) {
+    createRaceResult(input: $input, condition: $condition) {
       id
-      name
-      description
+      bib
+      firstName
+      lastName
+      elapsedTime
+      race
+      category
+      gender
+      place
+      finishTime
+      startTime
+      age
       createdAt
       updatedAt
       _version
@@ -19,15 +28,24 @@ export const createTodo = /* GraphQL */ `
     }
   }
 `;
-export const updateTodo = /* GraphQL */ `
-  mutation UpdateTodo(
-    $input: UpdateTodoInput!
-    $condition: ModelTodoConditionInput
+export const updateRaceResult = /* GraphQL */ `
+  mutation UpdateRaceResult(
+    $input: UpdateRaceResultInput!
+    $condition: ModelRaceResultConditionInput
   ) {
-    updateTodo(input: $input, condition: $condition) {
+    updateRaceResult(input: $input, condition: $condition) {
       id
-      name
-      description
+      bib
+      firstName
+      lastName
+      elapsedTime
+      race
+      category
+      gender
+      place
+      finishTime
+      startTime
+      age
       createdAt
       updatedAt
       _version
@@ -37,15 +55,81 @@ export const updateTodo = /* GraphQL */ `
     }
   }
 `;
-export const deleteTodo = /* GraphQL */ `
-  mutation DeleteTodo(
-    $input: DeleteTodoInput!
-    $condition: ModelTodoConditionInput
+export const deleteRaceResult = /* GraphQL */ `
+  mutation DeleteRaceResult(
+    $input: DeleteRaceResultInput!
+    $condition: ModelRaceResultConditionInput
   ) {
-    deleteTodo(input: $input, condition: $condition) {
+    deleteRaceResult(input: $input, condition: $condition) {
       id
-      name
-      description
+      bib
+      firstName
+      lastName
+      elapsedTime
+      race
+      category
+      gender
+      place
+      finishTime
+      startTime
+      age
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const createRaceMeta = /* GraphQL */ `
+  mutation CreateRaceMeta(
+    $input: CreateRaceMetaInput!
+    $condition: ModelRaceMetaConditionInput
+  ) {
+    createRaceMeta(input: $input, condition: $condition) {
+      id
+      raceName
+      raceDate
+      lastUpdated
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const updateRaceMeta = /* GraphQL */ `
+  mutation UpdateRaceMeta(
+    $input: UpdateRaceMetaInput!
+    $condition: ModelRaceMetaConditionInput
+  ) {
+    updateRaceMeta(input: $input, condition: $condition) {
+      id
+      raceName
+      raceDate
+      lastUpdated
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const deleteRaceMeta = /* GraphQL */ `
+  mutation DeleteRaceMeta(
+    $input: DeleteRaceMetaInput!
+    $condition: ModelRaceMetaConditionInput
+  ) {
+    deleteRaceMeta(input: $input, condition: $condition) {
+      id
+      raceName
+      raceDate
+      lastUpdated
       createdAt
       updatedAt
       _version
