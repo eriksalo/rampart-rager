@@ -28,27 +28,41 @@ const RampartRagerWebsite = () => {
   // This will be replaced by AWS API calls when you set up the backend
   const [raceData, setRaceData] = useState({
     '100K': [
-      { bib: 2, firstName: 'Jared', lastName: 'Black', elapsedTime: '9:01:00', category: 'Veteran', gender: 'MALE', place: 1 },
-      { bib: 3, firstName: 'Landry', lastName: 'Bobo', elapsedTime: '9:02:00', category: 'Open', gender: 'MALE', place: 2 },
-      { bib: 4, firstName: 'Paul', lastName: 'Brehm', elapsedTime: '9:03:00', category: 'Veteran', gender: 'MALE', place: 3 },
-      { bib: 5, firstName: 'William', lastName: 'Burke', elapsedTime: '9:04:00', category: 'Masters', gender: 'MALE', place: 4 },
-      { bib: 8, firstName: 'Max', lastName: 'Cohen', elapsedTime: '9:07:00', category: 'Open', gender: 'MALE', place: 5 },
-      { bib: 9, firstName: 'Jim', lastName: 'Copeland', elapsedTime: '9:08:00', category: 'Masters', gender: 'MALE', place: 6 },
+      { bib: 1, firstName: 'Emma', lastName: 'Young', elapsedTime: '8:55:00', category: 'Junior', gender: 'FEMALE', place: 1 },
+      { bib: 2, firstName: 'Jared', lastName: 'Black', elapsedTime: '9:01:00', category: 'Veteran', gender: 'MALE', place: 2 },
+      { bib: 3, firstName: 'Landry', lastName: 'Bobo', elapsedTime: '9:02:00', category: 'Open', gender: 'MALE', place: 3 },
+      { bib: 4, firstName: 'Paul', lastName: 'Brehm', elapsedTime: '9:03:00', category: 'Veteran', gender: 'MALE', place: 4 },
+      { bib: 5, firstName: 'William', lastName: 'Burke', elapsedTime: '9:04:00', category: 'Masters', gender: 'MALE', place: 5 },
+      { bib: 8, firstName: 'Max', lastName: 'Cohen', elapsedTime: '9:07:00', category: 'Open', gender: 'MALE', place: 6 },
+      { bib: 9, firstName: 'Jim', lastName: 'Copeland', elapsedTime: '9:08:00', category: 'Masters', gender: 'MALE', place: 7 },
+      { bib: 10, firstName: 'Tyler', lastName: 'Swift', elapsedTime: '9:12:00', category: 'Junior', gender: 'MALE', place: 8 },
     ],
     '70K': [
       { bib: 6, firstName: 'Neil', lastName: 'Cestra', elapsedTime: '9:05:00', category: 'Masters', gender: 'MALE', place: 1 },
-      { bib: 12, firstName: 'Richard', lastName: 'Crocker', elapsedTime: '9:11:00', category: 'Masters', gender: 'MALE', place: 2 },
-      { bib: 15, firstName: 'Ken', lastName: 'Dunn', elapsedTime: '9:14:00', category: 'Open', gender: 'MALE', place: 3 },
+      { bib: 11, firstName: 'Sophie', lastName: 'Runner', elapsedTime: '9:09:00', category: 'Junior', gender: 'FEMALE', place: 2 },
+      { bib: 12, firstName: 'Richard', lastName: 'Crocker', elapsedTime: '9:11:00', category: 'Masters', gender: 'MALE', place: 3 },
+      { bib: 15, firstName: 'Ken', lastName: 'Dunn', elapsedTime: '9:14:00', category: 'Open', gender: 'MALE', place: 4 },
+      { bib: 16, firstName: 'Jake', lastName: 'Fast', elapsedTime: '9:16:00', category: 'Junior', gender: 'MALE', place: 5 },
     ],
     '50K': [
       { bib: 7, firstName: 'Samuel', lastName: 'Chew', elapsedTime: '9:06:00', category: 'Open', gender: 'MALE', place: 1 },
-      { bib: 19, firstName: 'Christopher', lastName: 'Fife', elapsedTime: '9:18:00', category: 'Veteran', gender: 'MALE', place: 2 },
-      { bib: 22, firstName: 'Chris', lastName: 'Fowler', elapsedTime: '9:21:00', category: 'Masters', gender: 'MALE', place: 3 },
+      { bib: 17, firstName: 'Mia', lastName: 'Quick', elapsedTime: '9:15:00', category: 'Junior', gender: 'FEMALE', place: 2 },
+      { bib: 19, firstName: 'Christopher', lastName: 'Fife', elapsedTime: '9:18:00', category: 'Veteran', gender: 'MALE', place: 3 },
+      { bib: 22, firstName: 'Chris', lastName: 'Fowler', elapsedTime: '9:21:00', category: 'Masters', gender: 'MALE', place: 4 },
+      { bib: 23, firstName: 'Alex', lastName: 'Sprint', elapsedTime: '9:25:00', category: 'Junior', gender: 'MALE', place: 5 },
+    ],
+    'KOM': [
+      { bib: 101, firstName: 'Alex', lastName: 'Mountain', elapsedTime: '0:45:30', category: 'Open', gender: 'MALE', place: 1 },
+      { bib: 102, firstName: 'Sarah', lastName: 'Peak', elapsedTime: '0:52:15', category: 'Open', gender: 'FEMALE', place: 2 },
+      { bib: 103, firstName: 'Mike', lastName: 'Summit', elapsedTime: '0:48:20', category: 'Veteran', gender: 'MALE', place: 3 },
+      { bib: 104, firstName: 'Lisa', lastName: 'Ridge', elapsedTime: '0:55:45', category: 'Masters', gender: 'FEMALE', place: 4 },
+      { bib: 105, firstName: 'Zoe', lastName: 'Climb', elapsedTime: '0:49:30', category: 'Junior', gender: 'FEMALE', place: 5 },
+      { bib: 106, firstName: 'Ryan', lastName: 'Hill', elapsedTime: '0:51:15', category: 'Junior', gender: 'MALE', place: 6 },
     ]
   });
 
-  const categories = ['Open', 'Masters', 'Veteran'];
-  const races = ['100K', '70K', '50K'];
+  const categories = ['Junior', 'Open', 'Masters', 'Veteran'];
+  const races = ['100K', '70K', '50K', 'KOM'];
 
   // Load race data from AWS API
   useEffect(() => {
@@ -184,6 +198,20 @@ const RampartRagerWebsite = () => {
       .slice(0, 3);
   };
 
+  const getGenderResults = (race, gender) => {
+    const runners = raceData[race] || [];
+    return runners
+      .filter(runner => runner.gender === gender)
+      .sort((a, b) => a.place - b.place);
+  };
+
+  const getCategoryGenderResults = (race, category, gender) => {
+    const runners = raceData[race] || [];
+    return runners
+      .filter(runner => runner.category === category && runner.gender === gender)
+      .sort((a, b) => a.place - b.place);
+  };
+
   const handleEditRunner = (runner) => {
     setEditingRunner({ ...runner });
   };
@@ -253,6 +281,21 @@ const RampartRagerWebsite = () => {
     await handleAWSFileUpload(file);
   };
 
+  const handleAdminModeToggle = () => {
+    if (isAdminMode) {
+      // If already in admin mode, just exit
+      setIsAdminMode(false);
+    } else {
+      // Prompt for password to enter admin mode
+      const password = prompt('Enter admin password:');
+      if (password === 'cat') {
+        setIsAdminMode(true);
+      } else if (password !== null) {
+        alert('Incorrect password');
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
       <div className="container mx-auto px-4 py-8">
@@ -267,7 +310,7 @@ const RampartRagerWebsite = () => {
         {/* Admin Controls */}
         <div className="mb-6 flex justify-center space-x-4">
           <button
-            onClick={() => setIsAdminMode(!isAdminMode)}
+            onClick={handleAdminModeToggle}
             className={`px-4 py-2 rounded-lg font-semibold flex items-center space-x-2 transition-all ${
               isAdminMode 
                 ? 'bg-red-600 text-white hover:bg-red-700 shadow-md' 
@@ -348,14 +391,6 @@ const RampartRagerWebsite = () => {
                       <Clock className="w-5 h-5 mr-2" />
                       {formatTime(runner.elapsedTime)}
                     </p>
-                    {isAdminMode && (
-                      <button
-                        onClick={() => handleEditRunner(runner)}
-                        className="mt-2 px-3 py-1 bg-amber-600 text-white rounded hover:bg-amber-700 shadow-sm transition-all"
-                      >
-                        Edit
-                      </button>
-                    )}
                   </div>
                 </div>
               ))}
@@ -389,14 +424,6 @@ const RampartRagerWebsite = () => {
                       <p className="text-lg font-mono text-stone-800">
                         {formatTime(runner.elapsedTime)}
                       </p>
-                      {isAdminMode && (
-                        <button
-                          onClick={() => handleEditRunner(runner)}
-                          className="mt-1 px-2 py-1 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700 transition-all"
-                        >
-                          Edit
-                        </button>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -405,45 +432,134 @@ const RampartRagerWebsite = () => {
           </div>
         </div>
 
-        {/* All Results Table */}
-        <div className="mt-8 bg-stone-50 rounded-2xl p-6 shadow-lg border border-stone-200">
-          <h2 className="text-2xl font-bold text-stone-800 mb-6">All Results - {activeRace}</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="text-stone-600 border-b border-stone-200">
-                  <th className="pb-3">Place</th>
-                  <th className="pb-3">Bib</th>
-                  <th className="pb-3">Name</th>
-                  <th className="pb-3">Category</th>
-                  <th className="pb-3">Time</th>
-                  {isAdminMode && <th className="pb-3">Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {(raceData[activeRace] || []).map((runner) => (
-                  <tr key={runner.bib} className="text-stone-800 border-b border-stone-200 hover:bg-stone-50">
-                    <td className="py-3">{runner.place}</td>
-                    <td className="py-3">{runner.bib}</td>
-                    <td className="py-3">{runner.firstName} {runner.lastName}</td>
-                    <td className="py-3">{runner.category}</td>
-                    <td className="py-3 font-mono">{formatTime(runner.elapsedTime)}</td>
-                    {isAdminMode && (
-                      <td className="py-3">
-                        <button
-                          onClick={() => handleEditRunner(runner)}
-                          className="px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 shadow-sm transition-all"
-                        >
-                          Edit
-                        </button>
-                      </td>
-                    )}
+        {/* Men and Women Results */}
+        <div className="mt-8 grid lg:grid-cols-2 gap-8">
+          {/* Women Results */}
+          <div className="bg-stone-50 rounded-2xl p-6 shadow-lg border border-stone-200">
+            <h2 className="text-2xl font-bold text-stone-800 mb-6">Women - {activeRace}</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="text-stone-600 border-b border-stone-200">
+                    <th className="pb-3">Place</th>
+                    <th className="pb-3">Bib</th>
+                    <th className="pb-3">Name</th>
+                    <th className="pb-3">Category</th>
+                    <th className="pb-3">Time</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {getGenderResults(activeRace, 'FEMALE').map((runner, index) => (
+                    <tr key={runner.bib} className="text-stone-800 border-b border-stone-200 hover:bg-stone-50">
+                      <td className="py-3">{index + 1}</td>
+                      <td className="py-3">{runner.bib}</td>
+                      <td className="py-3">{runner.firstName} {runner.lastName}</td>
+                      <td className="py-3">{runner.category}</td>
+                      <td className="py-3 font-mono">{formatTime(runner.elapsedTime)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Men Results */}
+          <div className="bg-stone-50 rounded-2xl p-6 shadow-lg border border-stone-200">
+            <h2 className="text-2xl font-bold text-stone-800 mb-6">Men - {activeRace}</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="text-stone-600 border-b border-stone-200">
+                    <th className="pb-3">Place</th>
+                    <th className="pb-3">Bib</th>
+                    <th className="pb-3">Name</th>
+                    <th className="pb-3">Category</th>
+                    <th className="pb-3">Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {getGenderResults(activeRace, 'MALE').map((runner, index) => (
+                    <tr key={runner.bib} className="text-stone-800 border-b border-stone-200 hover:bg-stone-50">
+                      <td className="py-3">{index + 1}</td>
+                      <td className="py-3">{runner.bib}</td>
+                      <td className="py-3">{runner.firstName} {runner.lastName}</td>
+                      <td className="py-3">{runner.category}</td>
+                      <td className="py-3 font-mono">{formatTime(runner.elapsedTime)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
+
+        {/* Category Results */}
+        {categories.map(category => (
+          <div key={category} className="mt-8">
+            <h2 className="text-3xl font-bold text-stone-800 mb-6 text-center">{category} Category - {activeRace}</h2>
+            <div className="grid lg:grid-cols-2 gap-8">
+              {/* Women Category Results */}
+              <div className="bg-stone-50 rounded-2xl p-6 shadow-lg border border-stone-200">
+                <h3 className="text-xl font-bold text-stone-800 mb-4">Women {category}</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-stone-600 border-b border-stone-200">
+                        <th className="pb-3">Place</th>
+                        <th className="pb-3">Bib</th>
+                        <th className="pb-3">Name</th>
+                        <th className="pb-3">Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {getCategoryGenderResults(activeRace, category, 'FEMALE').map((runner, index) => (
+                        <tr key={runner.bib} className="text-stone-800 border-b border-stone-200 hover:bg-stone-50">
+                          <td className="py-3">{index + 1}</td>
+                          <td className="py-3">{runner.bib}</td>
+                          <td className="py-3">{runner.firstName} {runner.lastName}</td>
+                          <td className="py-3 font-mono">{formatTime(runner.elapsedTime)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {getCategoryGenderResults(activeRace, category, 'FEMALE').length === 0 && (
+                    <p className="text-stone-600 text-center py-4">No participants</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Men Category Results */}
+              <div className="bg-stone-50 rounded-2xl p-6 shadow-lg border border-stone-200">
+                <h3 className="text-xl font-bold text-stone-800 mb-4">Men {category}</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="text-stone-600 border-b border-stone-200">
+                        <th className="pb-3">Place</th>
+                        <th className="pb-3">Bib</th>
+                        <th className="pb-3">Name</th>
+                        <th className="pb-3">Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {getCategoryGenderResults(activeRace, category, 'MALE').map((runner, index) => (
+                        <tr key={runner.bib} className="text-stone-800 border-b border-stone-200 hover:bg-stone-50">
+                          <td className="py-3">{index + 1}</td>
+                          <td className="py-3">{runner.bib}</td>
+                          <td className="py-3">{runner.firstName} {runner.lastName}</td>
+                          <td className="py-3 font-mono">{formatTime(runner.elapsedTime)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {getCategoryGenderResults(activeRace, category, 'MALE').length === 0 && (
+                    <p className="text-stone-600 text-center py-4">No participants</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Edit Runner Modal */}
