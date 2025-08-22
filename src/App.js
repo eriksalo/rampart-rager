@@ -59,7 +59,7 @@ const RampartRagerWebsite = () => {
   const loadRaceData = async () => {
     try {
       setLoading(true);
-      const newRaceData = {};
+      const newRaceData = { ...raceData }; // Start with existing data
       
       for (const race of races) {
         try {
@@ -69,19 +69,22 @@ const RampartRagerWebsite = () => {
           });
           
           const results = response.data.listRaceResults.items || [];
-          // Sort by place
-          results.sort((a, b) => a.place - b.place);
-          newRaceData[race] = results;
+          // Only update if we actually have results
+          if (results.length > 0) {
+            // Sort by place
+            results.sort((a, b) => a.place - b.place);
+            newRaceData[race] = results;
+          }
         } catch (raceError) {
-          console.log(`No results found for ${race}, using empty array`);
-          newRaceData[race] = [];
+          console.log(`No results found for ${race}, keeping existing data`);
+          // Don't overwrite with empty array - keep existing data
         }
       }
       
       setRaceData(newRaceData);
     } catch (error) {
       console.error('Error loading race data:', error);
-      alert('Error loading race data. Using sample data.');
+      console.log('Keeping existing sample data.');
     } finally {
       setLoading(false);
     }
@@ -251,14 +254,14 @@ const RampartRagerWebsite = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-800">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-white mb-2">
+          <h1 className="text-5xl font-bold text-stone-800 mb-2">
             🏃‍♂️ Rampart Rager
           </h1>
-          <p className="text-xl text-blue-200">Ultra Marathon Race Results</p>
+          <p className="text-xl text-stone-600">Ultra Marathon Race Results</p>
         </div>
 
         {/* Admin Controls */}
@@ -267,8 +270,8 @@ const RampartRagerWebsite = () => {
             onClick={() => setIsAdminMode(!isAdminMode)}
             className={`px-4 py-2 rounded-lg font-semibold flex items-center space-x-2 transition-all ${
               isAdminMode 
-                ? 'bg-red-600 text-white hover:bg-red-700' 
-                : 'bg-green-600 text-white hover:bg-green-700'
+                ? 'bg-red-600 text-white hover:bg-red-700 shadow-md' 
+                : 'bg-orange-600 text-white hover:bg-orange-700 shadow-md'
             }`}
           >
             <Edit3 className="w-4 h-4" />
@@ -279,13 +282,13 @@ const RampartRagerWebsite = () => {
             <div className="flex space-x-2">
               <button
                 onClick={() => setShowAddRunner(true)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold flex items-center space-x-2 hover:bg-blue-700 transition-all"
+                className="px-4 py-2 bg-amber-600 text-white rounded-lg font-semibold flex items-center space-x-2 hover:bg-amber-700 shadow-md transition-all"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Runner</span>
               </button>
               
-              <label className="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold flex items-center space-x-2 hover:bg-purple-700 transition-all cursor-pointer">
+              <label className="px-4 py-2 bg-stone-600 text-white rounded-lg font-semibold flex items-center space-x-2 hover:bg-stone-700 shadow-md transition-all cursor-pointer">
                 <Upload className="w-4 h-4" />
                 <span>Upload Excel</span>
                 <input
@@ -301,15 +304,15 @@ const RampartRagerWebsite = () => {
 
         {/* Race Distance Tabs */}
         <div className="flex justify-center mb-8">
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-2">
+          <div className="bg-amber-50 rounded-xl p-2 shadow-lg border border-amber-200">
             {races.map(race => (
               <button
                 key={race}
                 onClick={() => setActiveRace(race)}
                 className={`px-6 py-3 mx-1 rounded-lg font-semibold transition-all ${
                   activeRace === race
-                    ? 'bg-white text-purple-900 shadow-lg'
-                    : 'text-white hover:bg-white/20'
+                    ? 'bg-orange-600 text-white shadow-md'
+                    : 'text-stone-600 hover:bg-amber-100'
                 }`}
               >
                 {race}
@@ -320,35 +323,35 @@ const RampartRagerWebsite = () => {
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Overall Winners */}
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+          <div className="bg-stone-50 rounded-2xl p-6 shadow-lg border border-stone-200">
+            <h2 className="text-2xl font-bold text-stone-800 mb-6 flex items-center">
               <Trophy className="w-8 h-8 text-yellow-500 mr-3" />
               Overall Top 3 - {activeRace}
             </h2>
             
             <div className="space-y-4">
               {getOverallWinners(activeRace).map((runner, index) => (
-                <div key={runner.bib} className="bg-white/20 rounded-xl p-4 flex items-center justify-between">
+                <div key={runner.bib} className="bg-amber-50 rounded-xl p-4 flex items-center justify-between border border-amber-100">
                   <div className="flex items-center space-x-4">
                     {getPlaceIcon(runner.place)}
                     <div>
-                      <h3 className="text-lg font-semibold text-white">
+                      <h3 className="text-lg font-semibold text-stone-800">
                         {runner.firstName} {runner.lastName}
                       </h3>
-                      <p className="text-blue-200">
+                      <p className="text-stone-600">
                         Bib #{runner.bib} • {runner.category} • {runner.gender}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-xl font-mono text-white flex items-center">
+                    <p className="text-xl font-mono text-stone-800 flex items-center">
                       <Clock className="w-5 h-5 mr-2" />
                       {formatTime(runner.elapsedTime)}
                     </p>
                     {isAdminMode && (
                       <button
                         onClick={() => handleEditRunner(runner)}
-                        className="mt-2 px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-all"
+                        className="mt-2 px-3 py-1 bg-amber-600 text-white rounded hover:bg-amber-700 shadow-sm transition-all"
                       >
                         Edit
                       </button>
@@ -360,30 +363,30 @@ const RampartRagerWebsite = () => {
           </div>
 
           {/* Category Winners */}
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6">
-            <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+          <div className="bg-stone-50 rounded-2xl p-6 shadow-lg border border-stone-200">
+            <h2 className="text-2xl font-bold text-stone-800 mb-6 flex items-center">
               <Users className="w-8 h-8 text-green-500 mr-3" />
               Category Winners - {activeRace}
             </h2>
             
             <div className="space-y-4">
               {Object.entries(getCategoryWinners(activeRace)).map(([category, runner]) => (
-                <div key={category} className="bg-white/20 rounded-xl p-4">
-                  <h3 className="text-lg font-semibold text-yellow-400 mb-2">{category}</h3>
+                <div key={category} className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                  <h3 className="text-lg font-semibold text-orange-500 mb-2">{category}</h3>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <Trophy className="w-5 h-5 text-yellow-500" />
                       <div>
-                        <p className="text-white font-semibold">
+                        <p className="text-stone-800 font-semibold">
                           {runner.firstName} {runner.lastName}
                         </p>
-                        <p className="text-blue-200 text-sm">
+                        <p className="text-stone-600 text-sm">
                           Bib #{runner.bib} • {runner.gender}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-lg font-mono text-white">
+                      <p className="text-lg font-mono text-stone-800">
                         {formatTime(runner.elapsedTime)}
                       </p>
                       {isAdminMode && (
@@ -403,12 +406,12 @@ const RampartRagerWebsite = () => {
         </div>
 
         {/* All Results Table */}
-        <div className="mt-8 bg-white/10 backdrop-blur-md rounded-2xl p-6">
-          <h2 className="text-2xl font-bold text-white mb-6">All Results - {activeRace}</h2>
+        <div className="mt-8 bg-stone-50 rounded-2xl p-6 shadow-lg border border-stone-200">
+          <h2 className="text-2xl font-bold text-stone-800 mb-6">All Results - {activeRace}</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-blue-200 border-b border-white/20">
+                <tr className="text-stone-600 border-b border-stone-200">
                   <th className="pb-3">Place</th>
                   <th className="pb-3">Bib</th>
                   <th className="pb-3">Name</th>
@@ -419,7 +422,7 @@ const RampartRagerWebsite = () => {
               </thead>
               <tbody>
                 {(raceData[activeRace] || []).map((runner) => (
-                  <tr key={runner.bib} className="text-white border-b border-white/10 hover:bg-white/5">
+                  <tr key={runner.bib} className="text-stone-800 border-b border-stone-200 hover:bg-stone-50">
                     <td className="py-3">{runner.place}</td>
                     <td className="py-3">{runner.bib}</td>
                     <td className="py-3">{runner.firstName} {runner.lastName}</td>
@@ -429,7 +432,7 @@ const RampartRagerWebsite = () => {
                       <td className="py-3">
                         <button
                           onClick={() => handleEditRunner(runner)}
-                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-all"
+                          className="px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 shadow-sm transition-all"
                         >
                           Edit
                         </button>
@@ -446,34 +449,34 @@ const RampartRagerWebsite = () => {
       {/* Edit Runner Modal */}
       {editingRunner && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Edit Runner</h3>
+          <div className="bg-stone-50 rounded-xl p-6 max-w-md w-full shadow-2xl border border-stone-200">
+            <h3 className="text-xl font-bold text-stone-800 mb-4">Edit Runner</h3>
             <div className="space-y-4">
               <input
                 type="text"
                 placeholder="First Name"
                 value={editingRunner.firstName}
                 onChange={(e) => setEditingRunner({...editingRunner, firstName: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
               <input
                 type="text"
                 placeholder="Last Name"
                 value={editingRunner.lastName}
                 onChange={(e) => setEditingRunner({...editingRunner, lastName: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
               <input
                 type="text"
                 placeholder="Elapsed Time (H:MM:SS)"
                 value={editingRunner.elapsedTime}
                 onChange={(e) => setEditingRunner({...editingRunner, elapsedTime: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
               <select
                 value={editingRunner.category}
                 onChange={(e) => setEditingRunner({...editingRunner, category: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               >
                 {categories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
@@ -483,14 +486,14 @@ const RampartRagerWebsite = () => {
             <div className="flex space-x-3 mt-6">
               <button
                 onClick={handleSaveEdit}
-                className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-all flex items-center justify-center"
+                className="flex-1 bg-emerald-600 text-white py-2 rounded-lg hover:bg-emerald-700 shadow-md transition-all flex items-center justify-center"
               >
                 <Save className="w-4 h-4 mr-2" />
                 Save
               </button>
               <button
                 onClick={() => setEditingRunner(null)}
-                className="flex-1 bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 transition-all flex items-center justify-center"
+                className="flex-1 bg-stone-500 text-white py-2 rounded-lg hover:bg-stone-600 shadow-md transition-all flex items-center justify-center"
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancel
@@ -503,41 +506,41 @@ const RampartRagerWebsite = () => {
       {/* Add Runner Modal */}
       {showAddRunner && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Add New Runner</h3>
+          <div className="bg-stone-50 rounded-xl p-6 max-w-md w-full shadow-2xl border border-stone-200">
+            <h3 className="text-xl font-bold text-stone-800 mb-4">Add New Runner</h3>
             <div className="space-y-4">
               <input
                 type="number"
                 placeholder="Bib Number"
                 value={newRunner.bib}
                 onChange={(e) => setNewRunner({...newRunner, bib: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
               <input
                 type="text"
                 placeholder="First Name"
                 value={newRunner.firstName}
                 onChange={(e) => setNewRunner({...newRunner, firstName: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
               <input
                 type="text"
                 placeholder="Last Name"
                 value={newRunner.lastName}
                 onChange={(e) => setNewRunner({...newRunner, lastName: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
               <input
                 type="text"
                 placeholder="Elapsed Time (H:MM:SS)"
                 value={newRunner.elapsedTime}
                 onChange={(e) => setNewRunner({...newRunner, elapsedTime: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
               <select
                 value={newRunner.category}
                 onChange={(e) => setNewRunner({...newRunner, category: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               >
                 {categories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
@@ -546,7 +549,7 @@ const RampartRagerWebsite = () => {
               <select
                 value={newRunner.gender}
                 onChange={(e) => setNewRunner({...newRunner, gender: e.target.value})}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-stone-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               >
                 <option value="MALE">Male</option>
                 <option value="FEMALE">Female</option>
@@ -555,14 +558,14 @@ const RampartRagerWebsite = () => {
             <div className="flex space-x-3 mt-6">
               <button
                 onClick={handleAddRunner}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center"
+                className="flex-1 bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 shadow-md transition-all flex items-center justify-center"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Runner
               </button>
               <button
                 onClick={() => setShowAddRunner(false)}
-                className="flex-1 bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 transition-all flex items-center justify-center"
+                className="flex-1 bg-stone-500 text-white py-2 rounded-lg hover:bg-stone-600 shadow-md transition-all flex items-center justify-center"
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancel
