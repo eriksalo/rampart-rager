@@ -14,7 +14,6 @@ exports.handler = async (event) => {
         const key = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
         
         console.log(`=== Processing file: ${key} from bucket: ${bucket} ===`);
-        console.log(`File extension: ${key.toLowerCase().split('.').pop()}`);
         
         // Download file from S3
         const data = await s3.getObject({
@@ -22,140 +21,106 @@ exports.handler = async (event) => {
             Key: key
         }).promise();
         
-        // Parse CSV/Excel file
-        let mainData;
-        
+        // Parse CSV file
+        let rows;
         if (key.toLowerCase().endsWith('.csv')) {
-            // Handle CSV file
             console.log('Processing CSV file');
             const csvText = data.Body.toString('utf8');
-            console.log('Raw CSV text (first 500 chars):', csvText.substring(0, 500));
-            mainData = csvText.split('\n').map(row => row.split(',').map(cell => cell.trim()));
-            console.log('Parsed CSV rows:', mainData.length);
-            console.log('First few rows:', mainData.slice(0, 3));
+            rows = csvText.split('\n').map(row => row.split(',').map(cell => cell.trim()));
         } else {
-            // Handle Excel file
             console.log('Processing Excel file');
             const workbook = XLSX.read(data.Body);
-            const mainSheet = workbook.Sheets[workbook.SheetNames[0]];
-            mainData = XLSX.utils.sheet_to_json(mainSheet, { header: 1 });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
         }
+        
+        console.log(`Total rows: ${rows.length}`);
+        console.log('Sample rows:', rows.slice(0, 3));
         
         const allResults = [];
         
-        // Process all rows (assuming first row might be data, not header)
-        console.log(`Total rows: ${mainData.length}`);
-        console.log(`First row:`, mainData[0]);
-        console.log(`Second row:`, mainData[1]);
-        
-        // Use constant start times as specified by user
-        let raceStartTimeConstant = '8:00:00';  // Race start time
-        let komStartTimeConstant = '8:30:00';   // KOM start time
-        
-        console.log(`Using constant start times: Race=${raceStartTimeConstant}, KOM=${komStartTimeConstant}`);
-        
-        // Start from row 0 (process all data rows)
-        let startRow = 0;
-        console.log(`Processing ${mainData.length - startRow} data rows with start times: Race=${raceStartTimeConstant}, KOM=${komStartTimeConstant}`);
-        
-        for (let i = startRow; i < mainData.length; i++) {
-            const row = mainData[i];
+        // Process each row (skip empty rows)
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
             
-            // Skip empty rows or rows without bib number
-            if (!row || row.length === 0 || !row[0] || row[0] === '') {
-                console.log(`  → Skipping empty row ${i}: row length=${row ? row.length : 0}, first cell="${row ? row[0] : 'undefined'}"`);
+            // Skip empty rows
+            if (!row || row.length === 0 || !row[0] || row[0] === '') continue;
+            
+            const bib = parseInt(row[0]);
+            const lastName = (row[1] || '').toString().trim();
+            const firstName = (row[2] || '').toString().trim();
+            const raceFinishTime = (row[3] || '').toString().trim();
+            const komFinishTime = (row[4] || '').toString().trim();
+            const race = (row[5] || '').toString().trim();
+            const category = (row[6] || 'Open').toString().trim();
+            const age = parseInt(row[7]) || 0;
+            const gender = (row[8] || 'MALE').toString().trim().toUpperCase();
+            
+            // Skip if missing essential data
+            if (!bib || !firstName || !lastName) {
+                console.log(`Skipping row ${i}: missing essential data`);
                 continue;
             }
             
-            console.log(`Processing row ${i} with ${row.length} columns:`, row);
+            console.log(`Processing: ${bib} ${firstName} ${lastName} - Race: ${race} (${raceFinishTime}) KOM: (${komFinishTime})`);
             
-            const bib = parseInt(row[0]);
-            const lastName = formatTime(row[1]) || '';
-            const firstName = formatTime(row[2]) || '';
-            const raceFinishTime = formatTime(row[3]);
-            const komFinishTime = formatTime(row[4]);
-            const race = formatTime(row[5]) || '';  // e.g., "100K"
-            const category = formatTime(row[6]) || 'Open';
-            const age = parseInt(row[7]) || 0;
-            const gender = (formatTime(row[8]) || 'MALE').toUpperCase();
-            // Row[9] is empty column in CSV - skip it
-            // Use constant start times
-            const raceStartTime = raceStartTimeConstant;
-            const komStartTime = komStartTimeConstant;
-            
-            console.log(`  → Parsed data: bib=${bib}, name="${firstName} ${lastName}", race="${race}", raceFinish="${raceFinishTime}", komFinish="${komFinishTime}", category="${category}", gender="${gender}", age=${age}`);
-            
-            // Calculate elapsed times from start and finish times
-            const raceElapsedTime = calculateElapsedTime(raceStartTime, raceFinishTime);
-            const komElapsedTime = calculateElapsedTime(komStartTime, komFinishTime);
-            
-            console.log(`Row ${i}: Bib=${bib}, Name=${firstName} ${lastName}`);
-            console.log(`  Race: "${race}", Category: "${category}", Age: ${age}, Gender: ${gender}`);
-            console.log(`  Race: Start=${raceStartTime}, Finish=${raceFinishTime}, Elapsed=${raceElapsedTime}`);
-            console.log(`  KOM: Start=${komStartTime}, Finish=${komFinishTime}, Elapsed=${komElapsedTime}`);
-            console.log(`  Raw row data:`, row);
-            
-            // Create race result entry if we have essential data
-            if (bib && firstName && lastName && race) {
-                const raceResult = {
-                    id: `${race}-${bib}`, // race-bib as ID
-                    bib: bib,
-                    firstName: firstName,
-                    lastName: lastName,
-                    elapsedTime: raceElapsedTime,
-                    finishTime: raceFinishTime,
-                    startTime: raceStartTime,
-                    race: race,
-                    category: category,
-                    gender: gender,
-                    age: age,
-                    place: 0 // Will be calculated based on elapsed time
-                };
+            // Create race result if we have race data
+            if (race && raceFinishTime && (race === '100K' || race === '70K' || race === '50K')) {
+                const raceElapsed = calculateElapsed('8:00:00', raceFinishTime);
                 
-                allResults.push(raceResult);
-                console.log(`  → Created ${race} result: elapsedTime=${raceResult.elapsedTime}`);
-            } else {
-                console.log(`  → Skipped race result: Missing data - bib=${bib}, firstName=${firstName}, lastName=${lastName}, race=${race}, raceElapsedTime=${raceElapsedTime}`);
+                if (raceElapsed) {
+                    allResults.push({
+                        id: `${race}-${bib}`,
+                        bib: bib,
+                        firstName: firstName,
+                        lastName: lastName,
+                        elapsedTime: raceElapsed,
+                        finishTime: raceFinishTime,
+                        startTime: '8:00:00',
+                        race: race,
+                        category: category,
+                        gender: gender,
+                        age: age,
+                        place: 0
+                    });
+                    console.log(`  → Created ${race} result: ${raceElapsed}`);
+                }
             }
             
-            // Create KOM result entry if we have participant data and KOM finish time
-            if (bib && firstName && lastName && komFinishTime) {
-                const komResult = {
-                    id: `KOM-${bib}`, // KOM-bib as ID
-                    bib: bib,
-                    firstName: firstName,
-                    lastName: lastName,
-                    elapsedTime: komElapsedTime,
-                    finishTime: komFinishTime,
-                    startTime: komStartTime,
-                    race: 'KOM',
-                    category: category,
-                    gender: gender,
-                    age: age,
-                    place: 0 // Will be calculated based on elapsed time
-                };
+            // Create KOM result if we have KOM finish time
+            if (komFinishTime) {
+                const komElapsed = calculateElapsed('8:30:00', komFinishTime);
                 
-                allResults.push(komResult);
-                console.log(`  → Created KOM result: elapsedTime=${komResult.elapsedTime}`);
-            } else if (bib && firstName && lastName) {
-                console.log(`  → Skipped KOM result: No calculated elapsed time - komElapsedTime=${komElapsedTime}`);
+                if (komElapsed) {
+                    allResults.push({
+                        id: `KOM-${bib}`,
+                        bib: bib,
+                        firstName: firstName,
+                        lastName: lastName,
+                        elapsedTime: komElapsed,
+                        finishTime: komFinishTime,
+                        startTime: '8:30:00',
+                        race: 'KOM',
+                        category: category,
+                        gender: gender,
+                        age: age,
+                        place: 0
+                    });
+                    console.log(`  → Created KOM result: ${komElapsed}`);
+                }
             }
         }
         
         console.log(`=== Total results created: ${allResults.length} ===`);
         
         if (allResults.length === 0) {
-            console.log('WARNING: No results were created from the uploaded file!');
             return {
                 statusCode: 200,
-                body: JSON.stringify({
-                    message: 'File processed but no valid results found',
-                    results: 0
-                })
+                body: JSON.stringify({ message: 'No valid results found', results: 0 })
             };
         }
         
-        // Calculate places for each race based on elapsed time
+        // Calculate places for each race
         const raceGroups = {};
         allResults.forEach(result => {
             if (!raceGroups[result.race]) {
@@ -164,32 +129,26 @@ exports.handler = async (event) => {
             raceGroups[result.race].push(result);
         });
         
-        console.log('Race groups:', Object.keys(raceGroups).map(race => `${race}: ${raceGroups[race].length}`));
-        
-        // Sort by elapsed time and assign places
-        Object.keys(raceGroups).forEach(race => {
-            raceGroups[race].sort((a, b) => {
-                const timeA = parseElapsedTime(a.elapsedTime);
-                const timeB = parseElapsedTime(b.elapsedTime);
+        // Sort each race by elapsed time and assign places
+        Object.keys(raceGroups).forEach(raceType => {
+            raceGroups[raceType].sort((a, b) => {
+                const timeA = timeToSeconds(a.elapsedTime);
+                const timeB = timeToSeconds(b.elapsedTime);
                 return timeA - timeB;
             });
             
-            raceGroups[race].forEach((result, index) => {
+            raceGroups[raceType].forEach((result, index) => {
                 result.place = index + 1;
             });
             
-            console.log(`${race}: ${raceGroups[race].length} results sorted and placed`);
+            console.log(`${raceType}: ${raceGroups[raceType].length} results ranked`);
         });
         
-        // Clear all existing race results before adding new ones
+        // Clear existing results
         const tableName = process.env.API_RACERESULTS_RACERESUITTABLE_NAME;
-        console.log('Clearing existing race results...');
+        console.log('Clearing existing results...');
         
-        // First, scan to get all existing items
-        let scanParams = {
-            TableName: tableName
-        };
-        
+        let scanParams = { TableName: tableName };
         let existingItems = [];
         let scanData;
         
@@ -199,46 +158,36 @@ exports.handler = async (event) => {
             scanParams.ExclusiveStartKey = scanData.LastEvaluatedKey;
         } while (scanData.LastEvaluatedKey);
         
-        console.log(`Found ${existingItems.length} existing items to delete`);
+        console.log(`Deleting ${existingItems.length} existing items`);
         
-        // Delete existing items in batches
+        // Delete in batches
         for (let i = 0; i < existingItems.length; i += 25) {
             const batch = existingItems.slice(i, i + 25);
             const deleteRequests = batch.map(item => ({
-                DeleteRequest: {
-                    Key: { id: item.id }
-                }
+                DeleteRequest: { Key: { id: item.id } }
             }));
             
             if (deleteRequests.length > 0) {
                 await dynamodb.batchWrite({
-                    RequestItems: {
-                        [tableName]: deleteRequests
-                    }
+                    RequestItems: { [tableName]: deleteRequests }
                 }).promise();
             }
         }
         
-        console.log('Finished clearing existing results');
-        
-        // Batch write new results to DynamoDB
-        
+        // Insert new results in batches
+        console.log('Inserting new results...');
         for (let i = 0; i < allResults.length; i += 25) {
             const batch = allResults.slice(i, i + 25);
             const putRequests = batch.map(result => ({
-                PutRequest: {
-                    Item: result
-                }
+                PutRequest: { Item: result }
             }));
             
             await dynamodb.batchWrite({
-                RequestItems: {
-                    [tableName]: putRequests
-                }
+                RequestItems: { [tableName]: putRequests }
             }).promise();
         }
         
-        // Update race metadata
+        // Update metadata
         const metaTableName = process.env.API_RACERESULTS_RACEMETATABLE_NAME;
         await dynamodb.put({
             TableName: metaTableName,
@@ -261,85 +210,43 @@ exports.handler = async (event) => {
         };
         
     } catch (error) {
-        console.error('Error processing file:', error);
+        console.error('Error:', error);
         return {
             statusCode: 500,
-            body: JSON.stringify({
-                error: error.message
-            })
+            body: JSON.stringify({ error: error.message })
         };
     }
 };
 
-// Helper functions
-function formatTime(timeValue) {
-    if (!timeValue) return '';
-    
-    if (typeof timeValue === 'string') {
-        return timeValue.trim();
-    }
-    
-    // Handle Excel date/time format
-    if (typeof timeValue === 'number') {
-        const date = new Date((timeValue - 25569) * 86400 * 1000);
-        const hours = date.getUTCHours();
-        const minutes = date.getUTCMinutes();
-        const seconds = date.getUTCSeconds();
-        return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
-    
-    return String(timeValue).trim();
-}
-
-// Parse time string (HH:MM:SS) to total seconds
-function timeToSeconds(timeString) {
-    if (!timeString || timeString === '') return 0;
-    
-    const parts = timeString.split(':');
-    if (parts.length === 3) {
-        const hours = parseInt(parts[0]) || 0;
-        const minutes = parseInt(parts[1]) || 0;
-        const seconds = parseInt(parts[2]) || 0;
-        return hours * 3600 + minutes * 60 + seconds;
-    }
-    return 0;
-}
-
-// Convert seconds back to HH:MM:SS format
-function secondsToTime(seconds) {
-    if (seconds <= 0) return '';
-    
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-// Calculate elapsed time between start and finish times
-function calculateElapsedTime(startTime, finishTime) {
-    if (!startTime || !finishTime) return '';
+// Helper function to calculate elapsed time
+function calculateElapsed(startTime, finishTime) {
+    if (!startTime || !finishTime) return null;
     
     const startSeconds = timeToSeconds(startTime);
     const finishSeconds = timeToSeconds(finishTime);
     
     if (finishSeconds > startSeconds) {
-        return secondsToTime(finishSeconds - startSeconds);
+        const elapsed = finishSeconds - startSeconds;
+        return secondsToTime(elapsed);
     }
     
-    return '';
+    return null;
 }
 
-function parseElapsedTime(timeString) {
-    if (!timeString) return Infinity; // Put entries without times at the end
-    
+// Convert HH:MM:SS to seconds
+function timeToSeconds(timeString) {
+    if (!timeString) return 0;
     const parts = timeString.split(':');
     if (parts.length === 3) {
-        const hours = parseInt(parts[0]) || 0;
-        const minutes = parseInt(parts[1]) || 0;
-        const seconds = parseInt(parts[2]) || 0;
-        return hours * 3600 + minutes * 60 + seconds; // Convert to total seconds
+        return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
     }
-    
-    return Infinity;
+    return 0;
+}
+
+// Convert seconds to HH:MM:SS
+function secondsToTime(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }

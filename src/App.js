@@ -553,26 +553,15 @@ const RampartRagerWebsite = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {getGenderResults(activeRace, 'FEMALE').map((runner, index) => {
-                    // Calculate overall place for this runner in the race
-                    const allRunners = raceData[activeRace] || [];
-                    const sortedRunners = [...allRunners].sort((a, b) => {
-                      const timeA = parseElapsedTime(a.elapsedTime);
-                      const timeB = parseElapsedTime(b.elapsedTime);
-                      return timeA - timeB;
-                    });
-                    const overallPlace = sortedRunners.findIndex(r => r.bib === runner.bib) + 1;
-                    
-                    return (
+                  {getGenderResults(activeRace, 'FEMALE').map((runner, index) => (
                     <tr key={runner.bib} className="text-stone-800 border-b border-stone-200 hover:bg-stone-50">
-                      <td className="py-3">{overallPlace}</td>
+                      <td className="py-3">{runner.place}</td>
                       <td className="py-3">{runner.bib}</td>
                       <td className="py-3">{runner.firstName} {runner.lastName}</td>
                       <td className="py-3">{runner.category}</td>
                       <td className="py-3 font-mono">{formatTime(runner.elapsedTime)}</td>
                     </tr>
-                    );
-                  })}
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -593,26 +582,15 @@ const RampartRagerWebsite = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {getGenderResults(activeRace, 'MALE').map((runner, index) => {
-                    // Calculate overall place for this runner in the race
-                    const allRunners = raceData[activeRace] || [];
-                    const sortedRunners = [...allRunners].sort((a, b) => {
-                      const timeA = parseElapsedTime(a.elapsedTime);
-                      const timeB = parseElapsedTime(b.elapsedTime);
-                      return timeA - timeB;
-                    });
-                    const overallPlace = sortedRunners.findIndex(r => r.bib === runner.bib) + 1;
-                    
-                    return (
+                  {getGenderResults(activeRace, 'MALE').map((runner, index) => (
                     <tr key={runner.bib} className="text-stone-800 border-b border-stone-200 hover:bg-stone-50">
-                      <td className="py-3">{overallPlace}</td>
+                      <td className="py-3">{runner.place}</td>
                       <td className="py-3">{runner.bib}</td>
                       <td className="py-3">{runner.firstName} {runner.lastName}</td>
                       <td className="py-3">{runner.category}</td>
                       <td className="py-3 font-mono">{formatTime(runner.elapsedTime)}</td>
                     </tr>
-                    );
-                  })}
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -640,7 +618,7 @@ const RampartRagerWebsite = () => {
                     <tbody>
                       {getCategoryGenderResults(activeRace, category, 'FEMALE').map((runner, index) => (
                         <tr key={runner.bib} className="text-stone-800 border-b border-stone-200 hover:bg-stone-50">
-                          <td className="py-3">{index + 1}</td>
+                          <td className="py-3">{runner.place}</td>
                           <td className="py-3">{runner.bib}</td>
                           <td className="py-3">{runner.firstName} {runner.lastName}</td>
                           <td className="py-3 font-mono">{formatTime(runner.elapsedTime)}</td>
@@ -670,7 +648,7 @@ const RampartRagerWebsite = () => {
                     <tbody>
                       {getCategoryGenderResults(activeRace, category, 'MALE').map((runner, index) => (
                         <tr key={runner.bib} className="text-stone-800 border-b border-stone-200 hover:bg-stone-50">
-                          <td className="py-3">{index + 1}</td>
+                          <td className="py-3">{runner.place}</td>
                           <td className="py-3">{runner.bib}</td>
                           <td className="py-3">{runner.firstName} {runner.lastName}</td>
                           <td className="py-3 font-mono">{formatTime(runner.elapsedTime)}</td>
