@@ -48,22 +48,14 @@ exports.handler = async (event) => {
         console.log(`First row:`, mainData[0]);
         console.log(`Second row:`, mainData[1]);
         
-        // The first row contains start times, subsequent rows contain participant data
-        // Extract start times from first row
-        let raceStartTimeConstant = '8:00:00';  // Default
-        let komStartTimeConstant = '8:30:00';   // Default
+        // Use constant start times as specified by user
+        let raceStartTimeConstant = '8:00:00';  // Race start time
+        let komStartTimeConstant = '8:30:00';   // KOM start time
         
-        if (mainData.length > 0 && mainData[0]) {
-            // Check if first row has start times in columns J and K (indices 9 and 10)
-            if (mainData[0][9] && mainData[0][10]) {
-                raceStartTimeConstant = formatTime(mainData[0][9]) || '8:00:00';
-                komStartTimeConstant = formatTime(mainData[0][10]) || '8:30:00';
-                console.log(`Extracted start times from first row: Race=${raceStartTimeConstant}, KOM=${komStartTimeConstant}`);
-            }
-        }
+        console.log(`Using constant start times: Race=${raceStartTimeConstant}, KOM=${komStartTimeConstant}`);
         
-        // Start from row 1 (skip the first row with start times)
-        let startRow = 1;
+        // Start from row 0 (process all data rows)
+        let startRow = 0;
         console.log(`Processing ${mainData.length - startRow} data rows with start times: Race=${raceStartTimeConstant}, KOM=${komStartTimeConstant}`);
         
         for (let i = startRow; i < mainData.length; i++) {
@@ -71,9 +63,11 @@ exports.handler = async (event) => {
             
             // Skip empty rows or rows without bib number
             if (!row || row.length === 0 || !row[0] || row[0] === '') {
-                console.log(`  → Skipping empty row ${i}`);
+                console.log(`  → Skipping empty row ${i}: row length=${row ? row.length : 0}, first cell="${row ? row[0] : 'undefined'}"`);
                 continue;
             }
+            
+            console.log(`Processing row ${i} with ${row.length} columns:`, row);
             
             const bib = parseInt(row[0]);
             const lastName = formatTime(row[1]) || '';
@@ -85,9 +79,11 @@ exports.handler = async (event) => {
             const age = parseInt(row[7]) || 0;
             const gender = (formatTime(row[8]) || 'MALE').toUpperCase();
             // Row[9] is empty column in CSV - skip it
-            // Use constant start times extracted from first row
+            // Use constant start times
             const raceStartTime = raceStartTimeConstant;
             const komStartTime = komStartTimeConstant;
+            
+            console.log(`  → Parsed data: bib=${bib}, name="${firstName} ${lastName}", race="${race}", raceFinish="${raceFinishTime}", komFinish="${komFinishTime}", category="${category}", gender="${gender}", age=${age}`);
             
             // Calculate elapsed times from start and finish times
             const raceElapsedTime = calculateElapsedTime(raceStartTime, raceFinishTime);
@@ -99,8 +95,8 @@ exports.handler = async (event) => {
             console.log(`  KOM: Start=${komStartTime}, Finish=${komFinishTime}, Elapsed=${komElapsedTime}`);
             console.log(`  Raw row data:`, row);
             
-            // Create race result entry if we have race data and calculated elapsed time
-            if (bib && firstName && lastName && race && raceElapsedTime) {
+            // Create race result entry if we have essential data
+            if (bib && firstName && lastName && race) {
                 const raceResult = {
                     id: `${race}-${bib}`, // race-bib as ID
                     bib: bib,
@@ -122,8 +118,8 @@ exports.handler = async (event) => {
                 console.log(`  → Skipped race result: Missing data - bib=${bib}, firstName=${firstName}, lastName=${lastName}, race=${race}, raceElapsedTime=${raceElapsedTime}`);
             }
             
-            // Create KOM result entry if we have KOM data and calculated elapsed time
-            if (bib && firstName && lastName && komElapsedTime) {
+            // Create KOM result entry if we have participant data and KOM finish time
+            if (bib && firstName && lastName && komFinishTime) {
                 const komResult = {
                     id: `KOM-${bib}`, // KOM-bib as ID
                     bib: bib,
