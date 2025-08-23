@@ -5,14 +5,16 @@ const s3 = new AWS.S3();
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 
 exports.handler = async (event) => {
-    console.log('Event:', JSON.stringify(event));
+    console.log('=== LAMBDA FUNCTION STARTED ===');
+    console.log('Event:', JSON.stringify(event, null, 2));
     
     try {
         // Handle S3 trigger
         const bucket = event.Records[0].s3.bucket.name;
         const key = decodeURIComponent(event.Records[0].s3.object.key.replace(/\+/g, ' '));
         
-        console.log(`Processing file: ${key} from bucket: ${bucket}`);
+        console.log(`=== Processing file: ${key} from bucket: ${bucket} ===`);
+        console.log(`File extension: ${key.toLowerCase().split('.').pop()}`);
         
         // Download file from S3
         const data = await s3.getObject({
@@ -20,74 +22,141 @@ exports.handler = async (event) => {
             Key: key
         }).promise();
         
-        // Parse Excel file
-        const workbook = XLSX.read(data.Body);
+        // Parse CSV/Excel file
+        let mainData;
         
-        // Process the new combined Excel format
-        // Use first sheet as it contains all data
-        const mainSheet = workbook.Sheets[workbook.SheetNames[0]];
-        const mainData = XLSX.utils.sheet_to_json(mainSheet, { header: 1 });
+        if (key.toLowerCase().endsWith('.csv')) {
+            // Handle CSV file
+            console.log('Processing CSV file');
+            const csvText = data.Body.toString('utf8');
+            console.log('Raw CSV text (first 500 chars):', csvText.substring(0, 500));
+            mainData = csvText.split('\n').map(row => row.split(',').map(cell => cell.trim()));
+            console.log('Parsed CSV rows:', mainData.length);
+            console.log('First few rows:', mainData.slice(0, 3));
+        } else {
+            // Handle Excel file
+            console.log('Processing Excel file');
+            const workbook = XLSX.read(data.Body);
+            const mainSheet = workbook.Sheets[workbook.SheetNames[0]];
+            mainData = XLSX.utils.sheet_to_json(mainSheet, { header: 1 });
+        }
         
         const allResults = [];
         
-        // Skip header row and process results
-        for (let i = 1; i < mainData.length; i++) {
-            const row = mainData[i];
-            if (row.length > 0 && row[0]) { // Has bib number
-                const bib = parseInt(row[0]);
-                const lastName = row[1] || '';
-                const firstName = row[2] || '';
-                const raceFinishTime = formatTime(row[3]);
-                const raceElapsedTime = formatTime(row[4]);
-                const komFinishTime = formatTime(row[5]);
-                const komElapsedTime = formatTime(row[6]);
-                const race = row[7] || '';
-                const category = row[8] || 'Open';
-                const age = parseInt(row[9]) || 0;
-                const gender = (row[10] || 'MALE').toUpperCase();
-                const raceStartTime = formatTime(row[11]) || '08:00:00';
-                const komStartTime = formatTime(row[12]) || '';
-                
-                // Create race result entry
-                if (bib && firstName && lastName && race) {
-                    const raceResult = {
-                        id: `${race}-${bib}`, // race-bib as ID
-                        bib: bib,
-                        firstName: firstName,
-                        lastName: lastName,
-                        elapsedTime: raceElapsedTime || '',
-                        finishTime: raceFinishTime || '',
-                        startTime: raceStartTime,
-                        race: race,
-                        category: category,
-                        gender: gender,
-                        age: age,
-                        place: 0 // Will be calculated based on elapsed time
-                    };
-                    
-                    allResults.push(raceResult);
-                }
-                
-                // Create KOM result entry if KOM data exists
-                if (bib && firstName && lastName && (komElapsedTime || komFinishTime)) {
-                    const komResult = {
-                        id: `KOM-${bib}`, // KOM-bib as ID
-                        bib: bib,
-                        firstName: firstName,
-                        lastName: lastName,
-                        elapsedTime: komElapsedTime || '',
-                        finishTime: komFinishTime || '',
-                        startTime: komStartTime || '',
-                        race: 'KOM',
-                        category: category,
-                        gender: gender,
-                        age: age,
-                        place: 0 // Will be calculated based on elapsed time
-                    };
-                    
-                    allResults.push(komResult);
-                }
+        // Process all rows (assuming first row might be data, not header)
+        console.log(`Total rows: ${mainData.length}`);
+        console.log(`First row:`, mainData[0]);
+        console.log(`Second row:`, mainData[1]);
+        
+        // The first row contains start times, subsequent rows contain participant data
+        // Extract start times from first row
+        let raceStartTimeConstant = '8:00:00';  // Default
+        let komStartTimeConstant = '8:30:00';   // Default
+        
+        if (mainData.length > 0 && mainData[0]) {
+            // Check if first row has start times in columns J and K (indices 9 and 10)
+            if (mainData[0][9] && mainData[0][10]) {
+                raceStartTimeConstant = formatTime(mainData[0][9]) || '8:00:00';
+                komStartTimeConstant = formatTime(mainData[0][10]) || '8:30:00';
+                console.log(`Extracted start times from first row: Race=${raceStartTimeConstant}, KOM=${komStartTimeConstant}`);
             }
+        }
+        
+        // Start from row 1 (skip the first row with start times)
+        let startRow = 1;
+        console.log(`Processing ${mainData.length - startRow} data rows with start times: Race=${raceStartTimeConstant}, KOM=${komStartTimeConstant}`);
+        
+        for (let i = startRow; i < mainData.length; i++) {
+            const row = mainData[i];
+            
+            // Skip empty rows or rows without bib number
+            if (!row || row.length === 0 || !row[0] || row[0] === '') {
+                console.log(`  → Skipping empty row ${i}`);
+                continue;
+            }
+            
+            const bib = parseInt(row[0]);
+            const lastName = formatTime(row[1]) || '';
+            const firstName = formatTime(row[2]) || '';
+            const raceFinishTime = formatTime(row[3]);
+            const komFinishTime = formatTime(row[4]);
+            const race = formatTime(row[5]) || '';  // e.g., "100K"
+            const category = formatTime(row[6]) || 'Open';
+            const age = parseInt(row[7]) || 0;
+            const gender = (formatTime(row[8]) || 'MALE').toUpperCase();
+            // Row[9] is empty column in CSV - skip it
+            // Use constant start times extracted from first row
+            const raceStartTime = raceStartTimeConstant;
+            const komStartTime = komStartTimeConstant;
+            
+            // Calculate elapsed times from start and finish times
+            const raceElapsedTime = calculateElapsedTime(raceStartTime, raceFinishTime);
+            const komElapsedTime = calculateElapsedTime(komStartTime, komFinishTime);
+            
+            console.log(`Row ${i}: Bib=${bib}, Name=${firstName} ${lastName}`);
+            console.log(`  Race: "${race}", Category: "${category}", Age: ${age}, Gender: ${gender}`);
+            console.log(`  Race: Start=${raceStartTime}, Finish=${raceFinishTime}, Elapsed=${raceElapsedTime}`);
+            console.log(`  KOM: Start=${komStartTime}, Finish=${komFinishTime}, Elapsed=${komElapsedTime}`);
+            console.log(`  Raw row data:`, row);
+            
+            // Create race result entry if we have race data and calculated elapsed time
+            if (bib && firstName && lastName && race && raceElapsedTime) {
+                const raceResult = {
+                    id: `${race}-${bib}`, // race-bib as ID
+                    bib: bib,
+                    firstName: firstName,
+                    lastName: lastName,
+                    elapsedTime: raceElapsedTime,
+                    finishTime: raceFinishTime,
+                    startTime: raceStartTime,
+                    race: race,
+                    category: category,
+                    gender: gender,
+                    age: age,
+                    place: 0 // Will be calculated based on elapsed time
+                };
+                
+                allResults.push(raceResult);
+                console.log(`  → Created ${race} result: elapsedTime=${raceResult.elapsedTime}`);
+            } else {
+                console.log(`  → Skipped race result: Missing data - bib=${bib}, firstName=${firstName}, lastName=${lastName}, race=${race}, raceElapsedTime=${raceElapsedTime}`);
+            }
+            
+            // Create KOM result entry if we have KOM data and calculated elapsed time
+            if (bib && firstName && lastName && komElapsedTime) {
+                const komResult = {
+                    id: `KOM-${bib}`, // KOM-bib as ID
+                    bib: bib,
+                    firstName: firstName,
+                    lastName: lastName,
+                    elapsedTime: komElapsedTime,
+                    finishTime: komFinishTime,
+                    startTime: komStartTime,
+                    race: 'KOM',
+                    category: category,
+                    gender: gender,
+                    age: age,
+                    place: 0 // Will be calculated based on elapsed time
+                };
+                
+                allResults.push(komResult);
+                console.log(`  → Created KOM result: elapsedTime=${komResult.elapsedTime}`);
+            } else if (bib && firstName && lastName) {
+                console.log(`  → Skipped KOM result: No calculated elapsed time - komElapsedTime=${komElapsedTime}`);
+            }
+        }
+        
+        console.log(`=== Total results created: ${allResults.length} ===`);
+        
+        if (allResults.length === 0) {
+            console.log('WARNING: No results were created from the uploaded file!');
+            return {
+                statusCode: 200,
+                body: JSON.stringify({
+                    message: 'File processed but no valid results found',
+                    results: 0
+                })
+            };
         }
         
         // Calculate places for each race based on elapsed time
@@ -98,6 +167,8 @@ exports.handler = async (event) => {
             }
             raceGroups[result.race].push(result);
         });
+        
+        console.log('Race groups:', Object.keys(raceGroups).map(race => `${race}: ${raceGroups[race].length}`));
         
         // Sort by elapsed time and assign places
         Object.keys(raceGroups).forEach(race => {
@@ -110,6 +181,8 @@ exports.handler = async (event) => {
             raceGroups[race].forEach((result, index) => {
                 result.place = index + 1;
             });
+            
+            console.log(`${race}: ${raceGroups[race].length} results sorted and placed`);
         });
         
         // Clear all existing race results before adding new ones
@@ -207,7 +280,7 @@ function formatTime(timeValue) {
     if (!timeValue) return '';
     
     if (typeof timeValue === 'string') {
-        return timeValue;
+        return timeValue.trim();
     }
     
     // Handle Excel date/time format
@@ -219,7 +292,46 @@ function formatTime(timeValue) {
         return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
     
-    return String(timeValue);
+    return String(timeValue).trim();
+}
+
+// Parse time string (HH:MM:SS) to total seconds
+function timeToSeconds(timeString) {
+    if (!timeString || timeString === '') return 0;
+    
+    const parts = timeString.split(':');
+    if (parts.length === 3) {
+        const hours = parseInt(parts[0]) || 0;
+        const minutes = parseInt(parts[1]) || 0;
+        const seconds = parseInt(parts[2]) || 0;
+        return hours * 3600 + minutes * 60 + seconds;
+    }
+    return 0;
+}
+
+// Convert seconds back to HH:MM:SS format
+function secondsToTime(seconds) {
+    if (seconds <= 0) return '';
+    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Calculate elapsed time between start and finish times
+function calculateElapsedTime(startTime, finishTime) {
+    if (!startTime || !finishTime) return '';
+    
+    const startSeconds = timeToSeconds(startTime);
+    const finishSeconds = timeToSeconds(finishTime);
+    
+    if (finishSeconds > startSeconds) {
+        return secondsToTime(finishSeconds - startSeconds);
+    }
+    
+    return '';
 }
 
 function parseElapsedTime(timeString) {

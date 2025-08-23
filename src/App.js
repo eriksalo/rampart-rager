@@ -92,6 +92,21 @@ const RampartRagerWebsite = () => {
   const categories = ['Junior', 'Open', 'Masters', 'Veteran'];
   const races = ['100K', '70K', '50K', 'KOM'];
 
+  // Helper function to parse elapsed time
+  const parseElapsedTime = (timeString) => {
+    if (!timeString) return Infinity; // Put entries without times at the end
+    
+    const parts = timeString.split(':');
+    if (parts.length === 3) {
+      const hours = parseInt(parts[0]) || 0;
+      const minutes = parseInt(parts[1]) || 0;
+      const seconds = parseInt(parts[2]) || 0;
+      return hours * 3600 + minutes * 60 + seconds; // Convert to total seconds
+    }
+    
+    return Infinity;
+  };
+
   // Load race data from AWS API
   useEffect(() => {
     loadRaceData();
@@ -182,30 +197,44 @@ const RampartRagerWebsite = () => {
     try {
       setUploading(true);
       
+      console.log('=== React Upload Started ===');
+      console.log('File name:', file.name);
+      console.log('File size:', file.size);
+      console.log('File type:', file.type);
+      
       // Clear existing data immediately to show user that upload is replacing all data
       setRaceData({});
       
+      // Create a clean filename for S3
+      const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const s3Key = `race-results/${Date.now()}-${cleanFileName}`;
+      
+      console.log('S3 key:', s3Key);
+      
       // Upload to S3 - this will trigger the Lambda function
       const result = await uploadData({
-        key: `race-results/${Date.now()}-${file.name}`,
+        key: s3Key,
         data: file,
         options: {
-          contentType: file.type
+          contentType: file.type || 'text/csv'
         }
       });
       
+      console.log('Upload initiated...');
       await result.result;
+      console.log('Upload completed to S3');
       
       alert('File uploaded successfully! Processing results...');
       
       // Reload data after a short delay to allow processing
       setTimeout(() => {
+        console.log('Reloading race data...');
         loadRaceData();
-      }, 8000); // Increased time to allow for clearing + processing
+      }, 10000); // Increased time to allow for clearing + processing
       
     } catch (error) {
       console.error('Error uploading file:', error);
-      alert('Error uploading file. Please try again.');
+      alert(`Error uploading file: ${error.message}`);
       // Reload existing data if upload failed
       loadRaceData();
     } finally {
@@ -216,20 +245,6 @@ const RampartRagerWebsite = () => {
   const formatTime = (timeString) => {
     if (!timeString) return 'DNF';
     return timeString;
-  };
-
-  const parseElapsedTime = (timeString) => {
-    if (!timeString) return Infinity; // Put entries without times at the end
-    
-    const parts = timeString.split(':');
-    if (parts.length === 3) {
-      const hours = parseInt(parts[0]) || 0;
-      const minutes = parseInt(parts[1]) || 0;
-      const seconds = parseInt(parts[2]) || 0;
-      return hours * 3600 + minutes * 60 + seconds; // Convert to total seconds
-    }
-    
-    return Infinity;
   };
 
   const getPlaceIcon = (place) => {
@@ -423,10 +438,10 @@ const RampartRagerWebsite = () => {
             
             <label className="px-4 py-2 bg-stone-600 text-white rounded-lg font-semibold flex items-center space-x-2 hover:bg-stone-700 shadow-md transition-all cursor-pointer">
               <Upload className="w-4 h-4" />
-              <span>Upload Excel</span>
+              <span>Upload File</span>
               <input
                 type="file"
-                accept=".xlsx,.xls"
+                accept=".xlsx,.xls,.csv"
                 onChange={handleFileUpload}
                 className="hidden"
               />

@@ -11,7 +11,10 @@
       "Bash(npm run build:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(npm start:*)"
+      "Bash(npm start:*)",
+      "Bash(taskkill:*)",
+      "Bash(powershell:*)",
+      "Bash(aws logs describe-log-groups:*)"
     ],
     "deny": [],
     "ask": []
