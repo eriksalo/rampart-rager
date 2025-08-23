@@ -112,8 +112,47 @@ exports.handler = async (event) => {
             });
         });
         
-        // Batch write to DynamoDB
+        // Clear all existing race results before adding new ones
         const tableName = process.env.API_RACERESULTS_RACERESUITTABLE_NAME;
+        console.log('Clearing existing race results...');
+        
+        // First, scan to get all existing items
+        let scanParams = {
+            TableName: tableName
+        };
+        
+        let existingItems = [];
+        let scanData;
+        
+        do {
+            scanData = await dynamodb.scan(scanParams).promise();
+            existingItems = existingItems.concat(scanData.Items);
+            scanParams.ExclusiveStartKey = scanData.LastEvaluatedKey;
+        } while (scanData.LastEvaluatedKey);
+        
+        console.log(`Found ${existingItems.length} existing items to delete`);
+        
+        // Delete existing items in batches
+        for (let i = 0; i < existingItems.length; i += 25) {
+            const batch = existingItems.slice(i, i + 25);
+            const deleteRequests = batch.map(item => ({
+                DeleteRequest: {
+                    Key: { id: item.id }
+                }
+            }));
+            
+            if (deleteRequests.length > 0) {
+                await dynamodb.batchWrite({
+                    RequestItems: {
+                        [tableName]: deleteRequests
+                    }
+                }).promise();
+            }
+        }
+        
+        console.log('Finished clearing existing results');
+        
+        // Batch write new results to DynamoDB
         
         for (let i = 0; i < allResults.length; i += 25) {
             const batch = allResults.slice(i, i + 25);

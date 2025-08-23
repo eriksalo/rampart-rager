@@ -24,32 +24,57 @@ const RampartRagerWebsite = () => {
     gender: 'MALE'
   });
 
-  // Sample data based on your Excel file structure
-  // This will be replaced by AWS API calls when you set up the backend
-  const [raceData, setRaceData] = useState({
+  // Sample data - used as fallback if AWS fails
+  const sampleRaceData = {
     '100K': [
-      { bib: 1, firstName: 'Emma', lastName: 'Young', elapsedTime: '8:55:00', category: 'Junior', gender: 'FEMALE', place: 1 },
-      { bib: 2, firstName: 'Jared', lastName: 'Black', elapsedTime: '9:01:00', category: 'Veteran', gender: 'MALE', place: 2 },
-      { bib: 3, firstName: 'Landry', lastName: 'Bobo', elapsedTime: '9:02:00', category: 'Open', gender: 'MALE', place: 3 },
-      { bib: 4, firstName: 'Paul', lastName: 'Brehm', elapsedTime: '9:03:00', category: 'Veteran', gender: 'MALE', place: 4 },
-      { bib: 5, firstName: 'William', lastName: 'Burke', elapsedTime: '9:04:00', category: 'Masters', gender: 'MALE', place: 5 },
-      { bib: 8, firstName: 'Max', lastName: 'Cohen', elapsedTime: '9:07:00', category: 'Open', gender: 'MALE', place: 6 },
-      { bib: 9, firstName: 'Jim', lastName: 'Copeland', elapsedTime: '9:08:00', category: 'Masters', gender: 'MALE', place: 7 },
-      { bib: 10, firstName: 'Tyler', lastName: 'Swift', elapsedTime: '9:12:00', category: 'Junior', gender: 'MALE', place: 8 },
+      { bib: 1, firstName: 'Emma', lastName: 'Young', elapsedTime: '8:55:23', category: 'Junior', gender: 'FEMALE', place: 1 },
+      { bib: 2, firstName: 'Jared', lastName: 'Black', elapsedTime: '9:01:15', category: 'Veteran', gender: 'MALE', place: 2 },
+      { bib: 3, firstName: 'Landry', lastName: 'Bobo', elapsedTime: '9:02:30', category: 'Open', gender: 'MALE', place: 3 },
+      { bib: 4, firstName: 'Paul', lastName: 'Brehm', elapsedTime: '9:03:45', category: 'Veteran', gender: 'MALE', place: 4 },
+      { bib: 5, firstName: 'William', lastName: 'Burke', elapsedTime: '9:04:12', category: 'Masters', gender: 'MALE', place: 5 },
+      { bib: 6, firstName: 'Sarah', lastName: 'Johnson', elapsedTime: '9:05:30', category: 'Open', gender: 'FEMALE', place: 6 },
+      { bib: 8, firstName: 'Max', lastName: 'Cohen', elapsedTime: '9:07:45', category: 'Open', gender: 'MALE', place: 7 },
+      { bib: 9, firstName: 'Jim', lastName: 'Copeland', elapsedTime: '9:08:22', category: 'Masters', gender: 'MALE', place: 8 },
+      { bib: 10, firstName: 'Tyler', lastName: 'Swift', elapsedTime: '9:12:15', category: 'Junior', gender: 'MALE', place: 9 },
+      { bib: 11, firstName: 'Lisa', lastName: 'Martinez', elapsedTime: '9:15:30', category: 'Masters', gender: 'FEMALE', place: 10 },
+      { bib: 12, firstName: 'Rachel', lastName: 'Thompson', elapsedTime: '9:22:45', category: 'Veteran', gender: 'FEMALE', place: 11 },
+      { bib: 13, firstName: 'Mike', lastName: 'Johnson', elapsedTime: '9:35:12', category: 'Open', gender: 'MALE', place: 12 },
+      { bib: 14, firstName: 'Anna', lastName: 'Wilson', elapsedTime: '9:42:30', category: 'Open', gender: 'FEMALE', place: 13 },
+      { bib: 15, firstName: 'Tom', lastName: 'Anderson', elapsedTime: '9:48:15', category: 'Masters', gender: 'MALE', place: 14 },
+      { bib: 16, firstName: 'Julie', lastName: 'Davis', elapsedTime: '9:55:45', category: 'Junior', gender: 'FEMALE', place: 15 },
+      { bib: 17, firstName: 'Steve', lastName: 'Miller', elapsedTime: '10:12:30', category: 'Veteran', gender: 'MALE', place: 16 },
+      { bib: 18, firstName: 'Karen', lastName: 'Brown', elapsedTime: '10:25:15', category: 'Masters', gender: 'FEMALE', place: 17 },
+      { bib: 19, firstName: 'Dave', lastName: 'Taylor', elapsedTime: '10:38:45', category: 'Veteran', gender: 'MALE', place: 18 },
     ],
     '70K': [
-      { bib: 6, firstName: 'Neil', lastName: 'Cestra', elapsedTime: '9:05:00', category: 'Masters', gender: 'MALE', place: 1 },
-      { bib: 11, firstName: 'Sophie', lastName: 'Runner', elapsedTime: '9:09:00', category: 'Junior', gender: 'FEMALE', place: 2 },
-      { bib: 12, firstName: 'Richard', lastName: 'Crocker', elapsedTime: '9:11:00', category: 'Masters', gender: 'MALE', place: 3 },
-      { bib: 15, firstName: 'Ken', lastName: 'Dunn', elapsedTime: '9:14:00', category: 'Open', gender: 'MALE', place: 4 },
-      { bib: 16, firstName: 'Jake', lastName: 'Fast', elapsedTime: '9:16:00', category: 'Junior', gender: 'MALE', place: 5 },
+      { bib: 21, firstName: 'Neil', lastName: 'Cestra', elapsedTime: '6:05:30', category: 'Masters', gender: 'MALE', place: 1 },
+      { bib: 22, firstName: 'Sophie', lastName: 'Runner', elapsedTime: '6:09:45', category: 'Junior', gender: 'FEMALE', place: 2 },
+      { bib: 23, firstName: 'Richard', lastName: 'Crocker', elapsedTime: '6:11:22', category: 'Masters', gender: 'MALE', place: 3 },
+      { bib: 24, firstName: 'Ken', lastName: 'Dunn', elapsedTime: '6:14:15', category: 'Open', gender: 'MALE', place: 4 },
+      { bib: 25, firstName: 'Jake', lastName: 'Fast', elapsedTime: '6:16:30', category: 'Junior', gender: 'MALE', place: 5 },
+      { bib: 26, firstName: 'Maria', lastName: 'Garcia', elapsedTime: '6:22:45', category: 'Open', gender: 'FEMALE', place: 6 },
+      { bib: 27, firstName: 'Bob', lastName: 'Smith', elapsedTime: '6:28:12', category: 'Veteran', gender: 'MALE', place: 7 },
+      { bib: 28, firstName: 'Linda', lastName: 'Jones', elapsedTime: '6:35:30', category: 'Masters', gender: 'FEMALE', place: 8 },
+      { bib: 29, firstName: 'Chris', lastName: 'Lee', elapsedTime: '6:42:15', category: 'Open', gender: 'MALE', place: 9 },
+      { bib: 30, firstName: 'Amy', lastName: 'White', elapsedTime: '6:48:45', category: 'Junior', gender: 'FEMALE', place: 10 },
+      { bib: 31, firstName: 'Mark', lastName: 'Wilson', elapsedTime: '6:55:22', category: 'Veteran', gender: 'MALE', place: 11 },
+      { bib: 32, firstName: 'Diana', lastName: 'Clark', elapsedTime: '7:02:30', category: 'Masters', gender: 'FEMALE', place: 12 },
     ],
     '50K': [
-      { bib: 7, firstName: 'Samuel', lastName: 'Chew', elapsedTime: '9:06:00', category: 'Open', gender: 'MALE', place: 1 },
-      { bib: 17, firstName: 'Mia', lastName: 'Quick', elapsedTime: '9:15:00', category: 'Junior', gender: 'FEMALE', place: 2 },
-      { bib: 19, firstName: 'Christopher', lastName: 'Fife', elapsedTime: '9:18:00', category: 'Veteran', gender: 'MALE', place: 3 },
-      { bib: 22, firstName: 'Chris', lastName: 'Fowler', elapsedTime: '9:21:00', category: 'Masters', gender: 'MALE', place: 4 },
-      { bib: 23, firstName: 'Alex', lastName: 'Sprint', elapsedTime: '9:25:00', category: 'Junior', gender: 'MALE', place: 5 },
+      { bib: 41, firstName: 'Samuel', lastName: 'Chew', elapsedTime: '4:06:30', category: 'Open', gender: 'MALE', place: 1 },
+      { bib: 42, firstName: 'Mia', lastName: 'Quick', elapsedTime: '4:15:45', category: 'Junior', gender: 'FEMALE', place: 2 },
+      { bib: 43, firstName: 'Christopher', lastName: 'Fife', elapsedTime: '4:18:22', category: 'Veteran', gender: 'MALE', place: 3 },
+      { bib: 44, firstName: 'Chris', lastName: 'Fowler', elapsedTime: '4:21:15', category: 'Masters', gender: 'MALE', place: 4 },
+      { bib: 45, firstName: 'Alex', lastName: 'Sprint', elapsedTime: '4:25:30', category: 'Junior', gender: 'MALE', place: 5 },
+      { bib: 46, firstName: 'Jessica', lastName: 'Turner', elapsedTime: '4:32:15', category: 'Open', gender: 'FEMALE', place: 6 },
+      { bib: 47, firstName: 'Robert', lastName: 'Green', elapsedTime: '4:38:45', category: 'Masters', gender: 'MALE', place: 7 },
+      { bib: 48, firstName: 'Sarah', lastName: 'Adams', elapsedTime: '4:42:30', category: 'Open', gender: 'FEMALE', place: 8 },
+      { bib: 49, firstName: 'John', lastName: 'Moore', elapsedTime: '4:48:15', category: 'Veteran', gender: 'MALE', place: 9 },
+      { bib: 50, firstName: 'Emily', lastName: 'Hall', elapsedTime: '4:55:22', category: 'Junior', gender: 'FEMALE', place: 10 },
+      { bib: 51, firstName: 'Peter', lastName: 'King', elapsedTime: '5:02:45', category: 'Masters', gender: 'MALE', place: 11 },
+      { bib: 52, firstName: 'Laura', lastName: 'Scott', elapsedTime: '5:08:30', category: 'Masters', gender: 'FEMALE', place: 12 },
+      { bib: 53, firstName: 'Dan', lastName: 'Phillips', elapsedTime: '5:15:15', category: 'Veteran', gender: 'MALE', place: 13 },
+      { bib: 54, firstName: 'Rachel', lastName: 'Evans', elapsedTime: '5:22:45', category: 'Open', gender: 'FEMALE', place: 14 },
     ],
     'KOM': [
       { bib: 101, firstName: 'Alex', lastName: 'Mountain', elapsedTime: '0:45:30', category: 'Open', gender: 'MALE', place: 1 },
@@ -59,7 +84,10 @@ const RampartRagerWebsite = () => {
       { bib: 105, firstName: 'Zoe', lastName: 'Climb', elapsedTime: '0:49:30', category: 'Junior', gender: 'FEMALE', place: 5 },
       { bib: 106, firstName: 'Ryan', lastName: 'Hill', elapsedTime: '0:51:15', category: 'Junior', gender: 'MALE', place: 6 },
     ]
-  });
+  };
+
+  // Start with empty data state
+  const [raceData, setRaceData] = useState({});
 
   const categories = ['Junior', 'Open', 'Masters', 'Veteran'];
   const races = ['100K', '70K', '50K', 'KOM'];
@@ -73,8 +101,10 @@ const RampartRagerWebsite = () => {
   const loadRaceData = async () => {
     try {
       setLoading(true);
-      const newRaceData = { ...raceData }; // Start with existing data
+      const newRaceData = {};
+      let hasAnyAWSData = false;
       
+      // Try to load data from AWS for each race
       for (const race of races) {
         try {
           const response = await client.graphql({
@@ -83,22 +113,40 @@ const RampartRagerWebsite = () => {
           });
           
           const results = response.data.listRaceResults.items || [];
-          // Only update if we actually have results
           if (results.length > 0) {
-            // Sort by place
-            results.sort((a, b) => a.place - b.place);
+            // Sort by elapsed time (AWS data should already be sorted by place)
+            results.sort((a, b) => {
+              const timeA = parseElapsedTime(a.elapsedTime);
+              const timeB = parseElapsedTime(b.elapsedTime);
+              return timeA - timeB;
+            });
             newRaceData[race] = results;
+            hasAnyAWSData = true;
+            console.log(`Loaded ${results.length} results for ${race} from AWS`);
           }
         } catch (raceError) {
-          console.log(`No results found for ${race}, keeping existing data`);
-          // Don't overwrite with empty array - keep existing data
+          console.log(`No AWS results found for ${race}`);
         }
       }
       
-      setRaceData(newRaceData);
+      // If we got any AWS data, use it. Otherwise, fall back to sample data
+      if (hasAnyAWSData) {
+        // Fill in missing races with empty arrays
+        races.forEach(race => {
+          if (!newRaceData[race]) {
+            newRaceData[race] = [];
+          }
+        });
+        setRaceData(newRaceData);
+        console.log('Using AWS data');
+      } else {
+        setRaceData(sampleRaceData);
+        console.log('No AWS data available, using sample data');
+      }
     } catch (error) {
       console.error('Error loading race data:', error);
-      console.log('Keeping existing sample data.');
+      console.log('Falling back to sample data due to error');
+      setRaceData(sampleRaceData);
     } finally {
       setLoading(false);
     }
@@ -134,6 +182,9 @@ const RampartRagerWebsite = () => {
     try {
       setUploading(true);
       
+      // Clear existing data immediately to show user that upload is replacing all data
+      setRaceData({});
+      
       // Upload to S3 - this will trigger the Lambda function
       const result = await uploadData({
         key: `race-results/${Date.now()}-${file.name}`,
@@ -145,16 +196,18 @@ const RampartRagerWebsite = () => {
       
       await result.result;
       
-      alert('File uploaded successfully! Results will be updated shortly.');
+      alert('File uploaded successfully! Processing results...');
       
       // Reload data after a short delay to allow processing
       setTimeout(() => {
         loadRaceData();
-      }, 5000);
+      }, 8000); // Increased time to allow for clearing + processing
       
     } catch (error) {
       console.error('Error uploading file:', error);
       alert('Error uploading file. Please try again.');
+      // Reload existing data if upload failed
+      loadRaceData();
     } finally {
       setUploading(false);
     }
@@ -163,6 +216,20 @@ const RampartRagerWebsite = () => {
   const formatTime = (timeString) => {
     if (!timeString) return 'DNF';
     return timeString;
+  };
+
+  const parseElapsedTime = (timeString) => {
+    if (!timeString) return Infinity; // Put entries without times at the end
+    
+    const parts = timeString.split(':');
+    if (parts.length === 3) {
+      const hours = parseInt(parts[0]) || 0;
+      const minutes = parseInt(parts[1]) || 0;
+      const seconds = parseInt(parts[2]) || 0;
+      return hours * 3600 + minutes * 60 + seconds; // Convert to total seconds
+    }
+    
+    return Infinity;
   };
 
   const getPlaceIcon = (place) => {
@@ -181,7 +248,11 @@ const RampartRagerWebsite = () => {
     categories.forEach(category => {
       const categoryRunners = runners
         .filter(runner => runner.category === category)
-        .sort((a, b) => a.place - b.place);
+        .sort((a, b) => {
+          const timeA = parseElapsedTime(a.elapsedTime);
+          const timeB = parseElapsedTime(b.elapsedTime);
+          return timeA - timeB;
+        });
       
       if (categoryRunners.length > 0) {
         categoryWinners[category] = categoryRunners[0];
@@ -194,7 +265,11 @@ const RampartRagerWebsite = () => {
   const getOverallWinners = (race) => {
     const runners = raceData[race] || [];
     return runners
-      .sort((a, b) => a.place - b.place)
+      .sort((a, b) => {
+        const timeA = parseElapsedTime(a.elapsedTime);
+        const timeB = parseElapsedTime(b.elapsedTime);
+        return timeA - timeB;
+      })
       .slice(0, 3);
   };
 
@@ -202,14 +277,22 @@ const RampartRagerWebsite = () => {
     const runners = raceData[race] || [];
     return runners
       .filter(runner => runner.gender === gender)
-      .sort((a, b) => a.place - b.place);
+      .sort((a, b) => {
+        const timeA = parseElapsedTime(a.elapsedTime);
+        const timeB = parseElapsedTime(b.elapsedTime);
+        return timeA - timeB;
+      });
   };
 
   const getCategoryGenderResults = (race, category, gender) => {
     const runners = raceData[race] || [];
     return runners
       .filter(runner => runner.category === category && runner.gender === gender)
-      .sort((a, b) => a.place - b.place);
+      .sort((a, b) => {
+        const timeA = parseElapsedTime(a.elapsedTime);
+        const timeB = parseElapsedTime(b.elapsedTime);
+        return timeA - timeB;
+      });
   };
 
   const handleEditRunner = (runner) => {
@@ -296,6 +379,26 @@ const RampartRagerWebsite = () => {
     }
   };
 
+  // Show loading or uploading state
+  if (loading || uploading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <h1 className="text-3xl font-bold text-stone-800 mb-2">🏃‍♂️ Rampart Rager</h1>
+          <p className="text-lg text-stone-600">
+            {uploading ? 'Processing Excel file and updating results...' : 'Loading race results...'}
+          </p>
+          {uploading && (
+            <p className="text-sm text-stone-500 mt-2">
+              This will replace all existing results with the new Excel data.
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
       <div className="container mx-auto px-4 py-8">
@@ -362,7 +465,7 @@ const RampartRagerWebsite = () => {
               {getOverallWinners(activeRace).map((runner, index) => (
                 <div key={runner.bib} className="bg-amber-50 rounded-xl p-4 flex items-center justify-between border border-amber-100">
                   <div className="flex items-center space-x-4">
-                    {getPlaceIcon(runner.place)}
+                    {getPlaceIcon(index + 1)}
                     <div>
                       <h3 className="text-lg font-semibold text-stone-800">
                         {runner.firstName} {runner.lastName}
@@ -435,15 +538,26 @@ const RampartRagerWebsite = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {getGenderResults(activeRace, 'FEMALE').map((runner, index) => (
+                  {getGenderResults(activeRace, 'FEMALE').map((runner, index) => {
+                    // Calculate overall place for this runner in the race
+                    const allRunners = raceData[activeRace] || [];
+                    const sortedRunners = [...allRunners].sort((a, b) => {
+                      const timeA = parseElapsedTime(a.elapsedTime);
+                      const timeB = parseElapsedTime(b.elapsedTime);
+                      return timeA - timeB;
+                    });
+                    const overallPlace = sortedRunners.findIndex(r => r.bib === runner.bib) + 1;
+                    
+                    return (
                     <tr key={runner.bib} className="text-stone-800 border-b border-stone-200 hover:bg-stone-50">
-                      <td className="py-3">{index + 1}</td>
+                      <td className="py-3">{overallPlace}</td>
                       <td className="py-3">{runner.bib}</td>
                       <td className="py-3">{runner.firstName} {runner.lastName}</td>
                       <td className="py-3">{runner.category}</td>
                       <td className="py-3 font-mono">{formatTime(runner.elapsedTime)}</td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -464,15 +578,26 @@ const RampartRagerWebsite = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {getGenderResults(activeRace, 'MALE').map((runner, index) => (
+                  {getGenderResults(activeRace, 'MALE').map((runner, index) => {
+                    // Calculate overall place for this runner in the race
+                    const allRunners = raceData[activeRace] || [];
+                    const sortedRunners = [...allRunners].sort((a, b) => {
+                      const timeA = parseElapsedTime(a.elapsedTime);
+                      const timeB = parseElapsedTime(b.elapsedTime);
+                      return timeA - timeB;
+                    });
+                    const overallPlace = sortedRunners.findIndex(r => r.bib === runner.bib) + 1;
+                    
+                    return (
                     <tr key={runner.bib} className="text-stone-800 border-b border-stone-200 hover:bg-stone-50">
-                      <td className="py-3">{index + 1}</td>
+                      <td className="py-3">{overallPlace}</td>
                       <td className="py-3">{runner.bib}</td>
                       <td className="py-3">{runner.firstName} {runner.lastName}</td>
                       <td className="py-3">{runner.category}</td>
                       <td className="py-3 font-mono">{formatTime(runner.elapsedTime)}</td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
