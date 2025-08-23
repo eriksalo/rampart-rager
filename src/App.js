@@ -308,42 +308,28 @@ const RampartRagerWebsite = () => {
         </div>
 
         {/* Admin Controls */}
-        <div className="mb-6 flex justify-center space-x-4">
-          <button
-            onClick={handleAdminModeToggle}
-            className={`px-4 py-2 rounded-lg font-semibold flex items-center space-x-2 transition-all ${
-              isAdminMode 
-                ? 'bg-red-600 text-white hover:bg-red-700 shadow-md' 
-                : 'bg-orange-600 text-white hover:bg-orange-700 shadow-md'
-            }`}
-          >
-            <Edit3 className="w-4 h-4" />
-            <span>{isAdminMode ? 'Exit Admin' : 'Admin Mode'}</span>
-          </button>
-          
-          {isAdminMode && (
-            <div className="flex space-x-2">
-              <button
-                onClick={() => setShowAddRunner(true)}
-                className="px-4 py-2 bg-amber-600 text-white rounded-lg font-semibold flex items-center space-x-2 hover:bg-amber-700 shadow-md transition-all"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Runner</span>
-              </button>
-              
-              <label className="px-4 py-2 bg-stone-600 text-white rounded-lg font-semibold flex items-center space-x-2 hover:bg-stone-700 shadow-md transition-all cursor-pointer">
-                <Upload className="w-4 h-4" />
-                <span>Upload Excel</span>
-                <input
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-              </label>
-            </div>
-          )}
-        </div>
+        {isAdminMode && (
+          <div className="mb-6 flex justify-center space-x-4">
+            <button
+              onClick={() => setShowAddRunner(true)}
+              className="px-4 py-2 bg-amber-600 text-white rounded-lg font-semibold flex items-center space-x-2 hover:bg-amber-700 shadow-md transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add Runner</span>
+            </button>
+            
+            <label className="px-4 py-2 bg-stone-600 text-white rounded-lg font-semibold flex items-center space-x-2 hover:bg-stone-700 shadow-md transition-all cursor-pointer">
+              <Upload className="w-4 h-4" />
+              <span>Upload Excel</span>
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </label>
+          </div>
+        )}
 
         {/* Race Distance Tabs */}
         <div className="flex justify-center mb-8">
@@ -560,6 +546,21 @@ const RampartRagerWebsite = () => {
             </div>
           </div>
         ))}
+
+        {/* Admin Button - Center Bottom */}
+        <div className="mt-12 flex justify-center">
+          <button
+            onClick={handleAdminModeToggle}
+            className={`px-6 py-3 rounded-lg font-semibold flex items-center space-x-2 transition-all ${
+              isAdminMode 
+                ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg' 
+                : 'bg-orange-600 text-white hover:bg-orange-700 shadow-lg'
+            }`}
+          >
+            <Edit3 className="w-4 h-4" />
+            <span>{isAdminMode ? 'Exit Admin' : 'Admin Mode'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Edit Runner Modal */}

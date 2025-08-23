@@ -18,7 +18,7 @@
       "function": {
         "processRaceResults": {
           "deploymentBucketName": "amplify-rampartrager-dev-80b14-deployment",
-          "s3Key": "amplify-builds/processRaceResults-784b71792b2b35753833-build.zip"
+          "s3Key": "amplify-builds/processRaceResults-4c6759434d5a6a7a737a-build.zip"
         }
       },
       "api": {

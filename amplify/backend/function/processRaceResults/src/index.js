@@ -23,45 +23,94 @@ exports.handler = async (event) => {
         // Parse Excel file
         const workbook = XLSX.read(data.Body);
         
-        // Process registration report sheet
-        const registrationSheet = workbook.Sheets['Sheet 1 - registration_report'] || 
-                                workbook.Sheets[workbook.SheetNames[0]];
-        const registrationData = XLSX.utils.sheet_to_json(registrationSheet, { header: 1 });
+        // Process the new combined Excel format
+        // Use first sheet as it contains all data
+        const mainSheet = workbook.Sheets[workbook.SheetNames[0]];
+        const mainData = XLSX.utils.sheet_to_json(mainSheet, { header: 1 });
         
-        // Process each race sheet (100K, 70K, 50K)
-        const raceSheets = ['100K', '70K', '50K'];
         const allResults = [];
         
-        for (const race of raceSheets) {
-            if (workbook.Sheets[race]) {
-                const raceData = XLSX.utils.sheet_to_json(workbook.Sheets[race], { header: 1 });
+        // Skip header row and process results
+        for (let i = 1; i < mainData.length; i++) {
+            const row = mainData[i];
+            if (row.length > 0 && row[0]) { // Has bib number
+                const bib = parseInt(row[0]);
+                const lastName = row[1] || '';
+                const firstName = row[2] || '';
+                const raceFinishTime = formatTime(row[3]);
+                const raceElapsedTime = formatTime(row[4]);
+                const komFinishTime = formatTime(row[5]);
+                const komElapsedTime = formatTime(row[6]);
+                const race = row[7] || '';
+                const category = row[8] || 'Open';
+                const age = parseInt(row[9]) || 0;
+                const gender = (row[10] || 'MALE').toUpperCase();
+                const raceStartTime = formatTime(row[11]) || '08:00:00';
+                const komStartTime = formatTime(row[12]) || '';
                 
-                // Skip header row and process results
-                for (let i = 1; i < raceData.length; i++) {
-                    const row = raceData[i];
-                    if (row.length > 4 && row[4]) { // Has bib number
-                        const result = {
-                            id: `${race}-${row[4]}`, // race-bib as ID
-                            bib: parseInt(row[4]),
-                            firstName: row[6] || '',
-                            lastName: row[5] || '',
-                            elapsedTime: formatTime(row[7]),
-                            race: race,
-                            category: getCategory(row[4], registrationData),
-                            gender: getGender(row[1]),
-                            place: parseInt(row[3]) || 0,
-                            finishTime: '',
-                            startTime: '08:00:00',
-                            age: getAge(row[4], registrationData)
-                        };
-                        
-                        if (result.bib && result.firstName && result.lastName) {
-                            allResults.push(result);
-                        }
-                    }
+                // Create race result entry
+                if (bib && firstName && lastName && race) {
+                    const raceResult = {
+                        id: `${race}-${bib}`, // race-bib as ID
+                        bib: bib,
+                        firstName: firstName,
+                        lastName: lastName,
+                        elapsedTime: raceElapsedTime || '',
+                        finishTime: raceFinishTime || '',
+                        startTime: raceStartTime,
+                        race: race,
+                        category: category,
+                        gender: gender,
+                        age: age,
+                        place: 0 // Will be calculated based on elapsed time
+                    };
+                    
+                    allResults.push(raceResult);
+                }
+                
+                // Create KOM result entry if KOM data exists
+                if (bib && firstName && lastName && (komElapsedTime || komFinishTime)) {
+                    const komResult = {
+                        id: `KOM-${bib}`, // KOM-bib as ID
+                        bib: bib,
+                        firstName: firstName,
+                        lastName: lastName,
+                        elapsedTime: komElapsedTime || '',
+                        finishTime: komFinishTime || '',
+                        startTime: komStartTime || '',
+                        race: 'KOM',
+                        category: category,
+                        gender: gender,
+                        age: age,
+                        place: 0 // Will be calculated based on elapsed time
+                    };
+                    
+                    allResults.push(komResult);
                 }
             }
         }
+        
+        // Calculate places for each race based on elapsed time
+        const raceGroups = {};
+        allResults.forEach(result => {
+            if (!raceGroups[result.race]) {
+                raceGroups[result.race] = [];
+            }
+            raceGroups[result.race].push(result);
+        });
+        
+        // Sort by elapsed time and assign places
+        Object.keys(raceGroups).forEach(race => {
+            raceGroups[race].sort((a, b) => {
+                const timeA = parseElapsedTime(a.elapsedTime);
+                const timeB = parseElapsedTime(b.elapsedTime);
+                return timeA - timeB;
+            });
+            
+            raceGroups[race].forEach((result, index) => {
+                result.place = index + 1;
+            });
+        });
         
         // Batch write to DynamoDB
         const tableName = process.env.API_RACERESULTS_RACERESUITTABLE_NAME;
@@ -134,19 +183,16 @@ function formatTime(timeValue) {
     return String(timeValue);
 }
 
-function getCategory(bib, registrationData) {
-    const runner = registrationData.find(row => row[0] === bib);
-    return runner ? runner[7] || 'Open' : 'Open';
-}
-
-function getGender(genderValue) {
-    if (typeof genderValue === 'string') {
-        return genderValue.toUpperCase();
+function parseElapsedTime(timeString) {
+    if (!timeString) return Infinity; // Put entries without times at the end
+    
+    const parts = timeString.split(':');
+    if (parts.length === 3) {
+        const hours = parseInt(parts[0]) || 0;
+        const minutes = parseInt(parts[1]) || 0;
+        const seconds = parseInt(parts[2]) || 0;
+        return hours * 3600 + minutes * 60 + seconds; // Convert to total seconds
     }
-    return 'MALE'; // default
-}
-
-function getAge(bib, registrationData) {
-    const runner = registrationData.find(row => row[0] === bib);
-    return runner ? runner[9] || 0 : 0;
+    
+    return Infinity;
 }
